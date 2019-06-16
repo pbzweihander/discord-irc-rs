@@ -1,0 +1,11 @@
+[irc]
+url = ""
+username = ""
+realname = ""
+nickname = ""
+channel = ""
+
+[discord]
+token = ""
+channel_id = 0
+webhook_url = ""
