@@ -19,7 +19,7 @@ pub async fn handle_irc(
         Code::Error => {
             let args = msg.args.join(" ");
 
-            info!("IRC> Error {}", args);
+            error!("IRC> Error {}", args);
 
             return Ok(());
         }
@@ -28,7 +28,7 @@ pub async fn handle_irc(
 
             writer.raw(format!("PING {}\n", args)).await?;
 
-            info!("IRC> PONG to {}", args);
+            debug!("IRC> PONG to {}", args);
 
             return Ok(());
         }
