@@ -16,6 +16,22 @@ pub async fn handle_irc(
     discord_webhook: String,
 ) -> Fallible<()> {
     match msg.code {
+        Code::Error => {
+            let args = msg.args.join(" ");
+
+            info!("IRC> Error {}", args);
+
+            return Ok(());
+        }
+        Code::Ping => {
+            let args = msg.args.join(" ");
+
+            writer.raw(format!("PING {}\n", args)).await?;
+
+            info!("IRC> PONG to {}", args);
+
+            return Ok(());
+        }
         Code::RplWelcome => {
             writer.raw(format!("JOIN {}\n", config.channel)).await?;
 
