@@ -13,7 +13,7 @@ use {
     crate::{config::*, discord::*, irc::*},
     failure::{err_msg, Fallible},
     futures::{compat::*, prelude::*},
-    std::{env::args, net::ToSocketAddrs, thread},
+    std::{env::args, net::ToSocketAddrs, process::exit, thread},
     tokio::{
         net::TcpStream,
         prelude::{Future as _, Stream as _},
@@ -61,7 +61,8 @@ fn main() -> Fallible<()> {
                         )
                     })
                     .try_collect()
-                    .map_err(|err| error!("IrcStream error: {}", err))
+                    .unwrap_or_else(|err| error!("IrcStream error: {}", err))
+                    .map(|_| exit(1))
                     .boxed()
                     .compat(),
             );
@@ -70,7 +71,8 @@ fn main() -> Fallible<()> {
                 irc_receiver
                     .map_err(Into::into)
                     .for_each(move |msg| send_irc(writer.clone(), msg).boxed().compat())
-                    .map_err(|err| error!("Irc send error: {}", err)),
+                    .map_err(|err| error!("Irc send error: {}", err))
+                    .map(|_| exit(1)),
             );
         };
         fallible.unwrap()
@@ -78,6 +80,7 @@ fn main() -> Fallible<()> {
 
     thread::spawn(move || {
         tokio::run(async_fut.unit_error().boxed().compat());
+        exit(1);
     });
 
     let mut client = serenity::Client::new(
@@ -87,5 +90,5 @@ fn main() -> Fallible<()> {
 
     client.start()?;
 
-    Ok(())
+    exit(1)
 }
