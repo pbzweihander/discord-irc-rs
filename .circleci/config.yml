@@ -1,0 +1,95 @@
+version: 2.1
+
+orbs:
+  docker: circleci/docker@0.5.1
+
+workflows:
+  lint-and-build:
+    jobs:
+      - lint
+      - build:
+          requires:
+            - lint
+      - docker/publish:
+          requires:
+            - build
+          image: pbzweihander/discord-irc-rs
+          tag: latest
+          dockerfile: Dockerfile-ci
+          before_build:
+            - attach_workspace:
+                at: target
+          after_build:
+            - run: |
+                docker tag \
+                  pbzweihander/discord-irc-rs:latest \
+                  pbzweihander/discord-irc-rs:$CIRCLE_SHA1
+            - docker/push:
+                image: pbzweihander/discord-irc-rs
+
+jobs:
+  lint:
+    docker:
+      - image: clux/muslrust:nightly-2019-05-21
+    working_directory: /app
+    steps:
+      - run:
+          name: rustc version
+          command: |
+            rustc --version
+      - run:
+          name: Install dependencies
+          command: |
+            rustup component add rustfmt clippy
+      - checkout
+      - restore_cache:
+          keys:
+            - cache-v2-debug-{{ .Branch }}-{{ checksum "Cargo.lock" }}
+            - cache-v2-debug-{{ .Branch }}-
+            - cache-v2-debug-
+      - run:
+          name: Running fmt check...
+          command: |
+            cargo fmt -- --check --verbose
+      - run:
+          name: Running cargo clippy...
+          command: |
+            cargo clippy --all-targets
+      - save_cache:
+          paths:
+            - /root/.cargo/registry
+            - target/x86_64-unknown-linux-musl/debug/deps
+            - target/x86_64-unknown-linux-musl/debug/build
+          key: cache-v2-debug-{{ .Branch }}-{{ checksum "Cargo.lock" }}
+
+  build:
+    docker:
+      - image: clux/muslrust:nightly-2019-05-21
+    working_directory: /app
+    steps:
+      - run:
+          name: rustc version
+          command: |
+            rustc --version
+      - checkout
+      - restore_cache:
+          keys:
+            - cache-v2-release-{{ .Branch }}-{{ checksum "Cargo.lock" }}
+            - cache-v2-release-{{ .Branch }}-
+            - cache-v2-release-
+      - run:
+          name: Building...
+          command: |
+            cargo build --release
+      - persist_to_workspace:
+          root: target/x86_64-unknown-linux-musl
+          paths:
+            - release/discord-irc
+      - store_artifacts:
+          path: target/x86_64-unknown-linux-musl/release/discord-irc
+      - save_cache:
+          paths:
+            - /root/.cargo/registry
+            - target/x86_64-unknown-linux-musl/release/deps
+            - target/x86_64-unknown-linux-musl/release/build
+          key: cache-v2-release-{{ .Branch }}-{{ checksum "Cargo.lock" }}
