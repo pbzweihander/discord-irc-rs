@@ -6,19 +6,19 @@ edition = "2018"
 
 [dependencies]
 configc = { version = "0.9.3", package = "config" }
-env_logger = "0.6.1"
+env_logger = "0.6.2"
 encoding = "0.2.33"
 failure = "0.1.5"
-futures-preview = { version = "0.3.0-alpha.16", features = ["io-compat"] }
+futures-preview = { version = "0.3.0-alpha.17", features = ["io-compat"] }
 lazy_static = "1.3.0"
-log = "0.4.6"
+log = "0.4.7"
 rustls = "0.15.2"
-serde = "1.0.92"
+serde = "1.0.94"
 yaircc = "0.0.0"
-tokio = "0.1.21"
+tokio = "0.1.22"
 
 [dependencies.serenity]
-version = "0.6.0-rc.2"
+version = "0.6.2"
 default-features = false
 features = [
     "client",
