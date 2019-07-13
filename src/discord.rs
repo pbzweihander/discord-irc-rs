@@ -32,16 +32,18 @@ impl EventHandler for DiscordHandler {
         if !msg.author.bot && msg.channel_id == self.config.channel_id {
             info!("DIS> <{}> {}", msg.author.name, msg.content);
 
-            let _ = self
-                .irc_writer
-                .clone()
-                .send(format!(
-                    "PRIVMSG {} :<{}> {}\n",
-                    self.irc_channel, msg.author.name, msg.content
-                ))
-                .map(|_| ())
-                .map_err(|err| error!("mpsc send error: {}", err))
-                .wait();
+            for line in msg.content.split('\n') {
+                let _ = self
+                    .irc_writer
+                    .clone()
+                    .send(format!(
+                        "PRIVMSG {} :<{}> {}\n",
+                        self.irc_channel, msg.author.name, line,
+                    ))
+                    .map(|_| ())
+                    .map_err(|err| error!("mpsc send error: {}", err))
+                    .wait();
+            }
         } else {
             debug!("DIS> {:?}", msg);
         }
