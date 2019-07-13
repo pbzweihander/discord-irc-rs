@@ -1,6 +1,7 @@
 use {
     crate::config::*,
     serenity::{model::channel::Message, prelude::*},
+    std::borrow::Cow,
     tokio::{
         prelude::{Future, Sink},
         sync::mpsc::UnboundedSender,
@@ -30,9 +31,15 @@ impl DiscordHandler {
 impl EventHandler for DiscordHandler {
     fn message(&self, _: Context, msg: Message) {
         if !msg.author.bot && msg.channel_id == self.config.channel_id {
-            info!("DIS> <{}> {}", msg.author.name, msg.content);
+            let msg_iter = msg
+                .content
+                .split('\n')
+                .map(|s| Cow::Borrowed(s))
+                .chain(msg.attachments.into_iter().map(|at| at.url).map(Into::into));
 
-            for line in msg.content.split('\n') {
+            for line in msg_iter {
+                info!("DIS> <{}> {}", msg.author.name, line);
+
                 let _ = self
                     .irc_writer
                     .clone()
