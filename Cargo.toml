@@ -21,8 +21,11 @@ tokio = "0.1.22"
 version = "0.6.2"
 default-features = false
 features = [
+    "cache",
     "client",
+    "model",
     "rustls_backend",
+    "utils",
 ]
 
 [dependencies.reqwest]
