@@ -26,7 +26,7 @@ pub async fn handle_irc(
         Code::Ping => {
             let args = msg.args.join(" ");
 
-            writer.raw(format!("PING {}\n", args)).await?;
+            writer.raw(format!("PONG {}\n", args)).await?;
 
             debug!("IRC> PONG to {}", args);
 
