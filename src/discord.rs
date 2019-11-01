@@ -48,18 +48,24 @@ impl EventHandler for DiscordHandler {
                 .chain(msg.attachments.into_iter().map(|at| at.url).map(Into::into));
 
             for line in lines {
-                info!("DIS> <{}> {}", msg.author.name, line);
+                let name = &msg.author.name;
 
-                let _ = self
-                    .irc_writer
-                    .clone()
-                    .send(format!(
-                        "PRIVMSG {} :<{}> {}\n",
-                        self.irc_channel, msg.author.name, line,
-                    ))
-                    .map(|_| ())
-                    .map_err(|err| error!("mpsc send error: {}", err))
-                    .wait();
+                if self.config.ignores.contains(name) {
+                    debug!("DIS| <{}(ignored)> {}", msg.author.name, line);
+                } else {
+                    info!("DIS> <{}> {}", msg.author.name, line);
+
+                    let _ = self
+                        .irc_writer
+                        .clone()
+                        .send(format!(
+                            "PRIVMSG {} :<{}> {}\n",
+                            self.irc_channel, msg.author.name, line,
+                        ))
+                        .map(|_| ())
+                        .map_err(|err| error!("mpsc send error: {}", err))
+                        .wait();
+                }
             }
         } else {
             debug!("DIS> {:?}", msg);

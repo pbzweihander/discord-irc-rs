@@ -4,8 +4,10 @@ username = ""
 realname = ""
 nickname = ""
 channel = ""
+ignores = []
 
 [discord]
 token = ""
 channel_id = 0
 webhook_url = ""
+ignores = []

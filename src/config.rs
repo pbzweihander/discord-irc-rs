@@ -7,6 +7,8 @@ pub struct IrcConfig {
     pub realname: String,
     pub nickname: String,
     pub channel: String,
+    #[serde(default)]
+    pub ignores: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -14,6 +16,8 @@ pub struct DiscordConfig {
     pub token: String,
     pub channel_id: u64,
     pub webhook_url: String,
+    #[serde(default)]
+    pub ignores: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

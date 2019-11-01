@@ -21,8 +21,6 @@ pub async fn handle_irc(
             let args = msg.args.join(" ");
 
             error!("IRC> Error {}", args);
-
-            return Ok(());
         }
         Code::Ping => {
             let args = msg.args.join(" ");
@@ -30,8 +28,6 @@ pub async fn handle_irc(
             write_irc!(writer, "PONG {}\n", args);
 
             debug!("IRC> PONG to {}", args);
-
-            return Ok(());
         }
         Code::RplWelcome => {
             write_irc!(writer, "JOIN {}\n", config.channel);
@@ -43,28 +39,28 @@ pub async fn handle_irc(
         Code::Join => {
             if let Some(Prefix::User(PrefixUser { nickname, .. })) = msg.prefix {
                 info!("IRC> Joinned to {} as {}", msg.args[0], nickname);
-
-                return Ok(());
             }
         }
         Code::Privmsg => {
             let content = &msg.args[1];
             if let Some(Prefix::User(PrefixUser { nickname, .. })) = msg.prefix {
-                info!("IRC> <{}> {}", nickname, content);
+                if config.ignores.contains(&nickname) {
+                    debug!("IRC| <{}(ignored)> {}", nickname, content);
+                } else {
+                    info!("IRC> <{}> {}", nickname, content);
 
-                let body = WebhookBody {
-                    content: content.to_string(),
-                    username: nickname,
-                };
-                execute_webhook(&discord_webhook, &body).await?;
-
-                return Ok(());
+                    let body = WebhookBody {
+                        content: content.to_string(),
+                        username: nickname,
+                    };
+                    execute_webhook(&discord_webhook, &body).await?;
+                }
             }
         }
-        _ => (),
+        _ => {
+            debug!("IRC> {:?}", msg);
+        }
     }
-
-    debug!("IRC> {:?}", msg);
 
     Ok(())
 }
