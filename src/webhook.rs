@@ -13,10 +13,10 @@ pub struct WebhookBody {
     pub username: String,
 }
 
-pub async fn execute_webhook(url: String, body: WebhookBody) -> Fallible<()> {
+pub async fn execute_webhook(url: &str, body: &WebhookBody) -> Fallible<()> {
     CLIENT
-        .post(&url)
-        .json(&body)
+        .post(url)
+        .json(body)
         .send()
         .compat()
         .await?

@@ -2,6 +2,7 @@ use {
     crate::{
         config::IrcConfig,
         webhook::{execute_webhook, WebhookBody},
+        write_irc,
     },
     failure::Fallible,
     futures::{compat::*, prelude::*},
@@ -10,10 +11,10 @@ use {
 };
 
 pub async fn handle_irc(
-    config: IrcConfig,
     msg: Message,
     writer: Writer<Compat01As03<TcpStream>>,
     discord_webhook: String,
+    config: IrcConfig,
 ) -> Fallible<()> {
     match msg.code {
         Code::Error => {
@@ -26,14 +27,14 @@ pub async fn handle_irc(
         Code::Ping => {
             let args = msg.args.join(" ");
 
-            writer.raw(format!("PONG {}\n", args)).await?;
+            write_irc!(writer, "PONG {}\n", args);
 
             debug!("IRC> PONG to {}", args);
 
             return Ok(());
         }
         Code::RplWelcome => {
-            writer.raw(format!("JOIN {}\n", config.channel)).await?;
+            write_irc!(writer, "JOIN {}\n", config.channel);
 
             info!("IRC> Joinning to {}...", config.channel);
 
@@ -55,7 +56,7 @@ pub async fn handle_irc(
                     content: content.to_string(),
                     username: nickname,
                 };
-                execute_webhook(discord_webhook, body).await?;
+                execute_webhook(&discord_webhook, &body).await?;
 
                 return Ok(());
             }
