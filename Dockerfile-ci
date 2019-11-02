@@ -1,8 +1,8 @@
 FROM alpine
 
-COPY target/release/discord-irc /discord-irc
+COPY target/release/discord-irc /usr/local/bin/discord-irc
 
 RUN apk add --no-cache tini
 ENTRYPOINT ["/sbin/tini", "--"]
 
-CMD ["/discord-irc", "/config.toml"]
+CMD ["discord-irc", "/config.toml"]
