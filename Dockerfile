@@ -1,4 +1,4 @@
-FROM clux/muslrust:nightly-2019-10-31
+FROM clux/muslrust:stable-2019-11-04
 
 WORKDIR /
 RUN USER=root cargo new --bin app

@@ -7,7 +7,7 @@ A Discord to IRC and vice-versa bridge bot written in Rust.
 
 ## Usage
 
-Requires nightly-2019-05-22 version of rustc.
+Requires 1.39+ version of rustc.
 
 ```bash
 $ cp sample.toml config.toml

@@ -5,18 +5,16 @@ authors = ["pbzweihander <pbzweihander@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-# rustc 1.39.0-beta.8 (f6404c5a9 2019-10-30)
-
 configc = { version = "0.9.3", package = "config" }
 env_logger = "0.7.1"
 encoding = "0.2.33"
 failure = "0.1.6"
-futures-preview = { version = "0.3.0-alpha.19", features = ["io-compat"] }
+futures = { version = "0.3.1", features = ["io-compat"] }
 lazy_static = "1.4.0"
 log = "0.4.8"
 rustls = "0.16.0"
 serde = "1.0.102"
-yaircc = "0.0.1"
+yaircc = "0.1.0"
 tokio = "0.1.22"
 
 [dependencies.serenity]
