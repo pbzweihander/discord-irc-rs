@@ -1,11 +1,7 @@
 use {
-    failure::Fallible, futures::compat::*, lazy_static::lazy_static, reqwest::r#async::Client,
+    failure::{err_msg, Error, Fallible},
     serde::Serialize,
 };
-
-lazy_static! {
-    static ref CLIENT: Client = Client::new();
-}
 
 #[derive(Serialize)]
 pub struct WebhookBody {
@@ -14,13 +10,14 @@ pub struct WebhookBody {
 }
 
 pub async fn execute_webhook(url: &str, body: &WebhookBody) -> Fallible<()> {
-    CLIENT
-        .post(url)
-        .json(body)
-        .send()
-        .compat()
-        .await?
-        .error_for_status()
-        .map(|_| ())
-        .map_err(Into::into)
+    let resp = surf::post(url)
+        .body_json(body)?
+        .await
+        .map_err(Error::from_boxed_compat)?;
+    let status = resp.status();
+    if !status.is_success() {
+        Err(err_msg(status.as_str().to_string()))
+    } else {
+        Ok(())
+    }
 }

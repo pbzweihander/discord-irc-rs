@@ -8,14 +8,13 @@ mod webhook;
 
 use {
     crate::{config::*, discord::*, irc::*},
-    failure::{err_msg, Fallible},
-    futures::{compat::*, prelude::*},
-    std::{env::args, net::ToSocketAddrs, process::exit, thread},
-    tokio::{
+    async_std::{
         net::TcpStream,
-        prelude::{Future as _, Stream as _},
-        sync::mpsc,
+        task::{block_on, spawn},
     },
+    failure::{err_msg, Fallible},
+    futures::{channel::mpsc, future::join, prelude::*},
+    std::{env::args, net::ToSocketAddrs, process::exit, thread},
     yaircc::*,
 };
 
@@ -32,10 +31,8 @@ async fn spawn_irc(
     discord_webhook: String,
     irc_receiver: mpsc::UnboundedReceiver<String>,
 ) -> Fallible<()> {
-    let tcp_stream = TcpStream::connect(&config.url.to_socket_addrs()?.next().unwrap())
-        .compat()
-        .await?;
-    let irc_stream = IrcStream::new(Compat01As03::new(tcp_stream), encoding::all::UTF_8);
+    let tcp_stream = TcpStream::connect(&config.url.to_socket_addrs()?.next().unwrap()).await?;
+    let irc_stream = IrcStream::new(tcp_stream, encoding::all::UTF_8);
     let writer = irc_stream.writer();
     let writer_clone = writer.clone();
 
@@ -47,7 +44,7 @@ async fn spawn_irc(
     );
     write_irc!(writer, "NICK {}\n", config.nickname);
 
-    tokio::spawn(
+    let reader_handle = spawn(
         irc_stream
             .err_into()
             .and_then(move |msg| {
@@ -55,18 +52,19 @@ async fn spawn_irc(
             })
             .try_collect()
             .unwrap_or_else(|err| error!("IrcStream error: {}", err))
-            .map(|_| exit(1))
-            .boxed()
-            .compat(),
-    );
-
-    tokio::spawn(
-        irc_receiver
-            .map_err(Into::into)
-            .for_each(move |msg| send_irc(writer_clone.clone(), msg).boxed().compat())
-            .map_err(|err| error!("Irc send error: {}", err))
             .map(|_| exit(1)),
     );
+
+    let writer_handle = spawn(
+        irc_receiver
+            .for_each(move |msg| {
+                send_irc(writer_clone.clone(), msg)
+                    .unwrap_or_else(|err| error!("Irc send error: {}", err))
+            })
+            .map(|_| exit(1)),
+    );
+
+    join(reader_handle, writer_handle).await;
 
     Ok(())
 }
@@ -79,13 +77,13 @@ fn main() -> Fallible<()> {
         return Err(err_msg(format!("USAGE: {} <CONFIG_PATH>", args[0])));
     }
     let Config { irc, discord } = Config::from_path(&args[1])?;
-    let (irc_sender, irc_receiver) = mpsc::unbounded_channel();
+    let (irc_sender, irc_receiver) = mpsc::unbounded();
 
     let irc_fut =
         spawn_irc(irc.clone(), discord.webhook_url.clone(), irc_receiver).map(Result::unwrap);
 
     thread::spawn(move || {
-        tokio::run(irc_fut.unit_error().boxed().compat());
+        block_on(irc_fut);
         exit(1);
     });
 

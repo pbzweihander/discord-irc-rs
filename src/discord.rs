@@ -1,11 +1,9 @@
 use {
     crate::config::*,
+    async_std::task::spawn,
+    futures::{channel::mpsc::UnboundedSender, prelude::*},
     serenity::{model::channel::Message, prelude::*},
     std::borrow::Cow,
-    tokio::{
-        prelude::{Future, Sink},
-        sync::mpsc::UnboundedSender,
-    },
 };
 
 pub struct DiscordHandler {
@@ -55,16 +53,17 @@ impl EventHandler for DiscordHandler {
                 } else {
                     info!("DIS> <{}> {}", msg.author.name, line);
 
-                    let _ = self
-                        .irc_writer
-                        .clone()
-                        .send(format!(
-                            "PRIVMSG {} :<{}> {}\n",
-                            self.irc_channel, msg.author.name, line,
-                        ))
-                        .map(|_| ())
-                        .map_err(|err| error!("mpsc send error: {}", err))
-                        .wait();
+                    let mut writer = self.irc_writer.clone();
+                    let msg = format!(
+                        "PRIVMSG {} :<{}> {}\n",
+                        self.irc_channel, msg.author.name, line,
+                    );
+                    spawn(async move {
+                        writer
+                            .send(msg)
+                            .unwrap_or_else(|err| error!("mpsc send error: {}", err))
+                            .await
+                    });
                 }
             }
         } else {

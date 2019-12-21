@@ -5,20 +5,19 @@ authors = ["pbzweihander <pbzweihander@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-configc = { version = "0.9.3", package = "config" }
+configc = { version = "0.10.1", package = "config" }
 env_logger = "0.7.1"
 encoding = "0.2.33"
 failure = "0.1.6"
-futures = { version = "0.3.1", features = ["io-compat"] }
-lazy_static = "1.4.0"
+futures = "0.3.1"
 log = "0.4.8"
-rustls = "0.16.0"
-serde = "1.0.102"
+serde = "1.0.104"
 yaircc = "0.1.0"
-tokio = "0.1.22"
+async-std = "1.4.0"
+surf = "1.0.3"
 
 [dependencies.serenity]
-version = "0.7.2"
+version = "0.7.4"
 default-features = false
 features = [
     "cache",
@@ -26,11 +25,4 @@ features = [
     "model",
     "rustls_backend",
     "utils",
-]
-
-[dependencies.reqwest]
-version = "0.9.22"
-default-features = false
-features = [
-    "rustls-tls",
 ]

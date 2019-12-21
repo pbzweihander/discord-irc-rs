@@ -4,15 +4,15 @@ use {
         webhook::{execute_webhook, WebhookBody},
         write_irc,
     },
+    async_std::net::TcpStream,
     failure::Fallible,
-    futures::{compat::*, prelude::*},
-    tokio::net::TcpStream,
+    futures::prelude::*,
     yaircc::*,
 };
 
 pub async fn handle_irc(
     msg: Message,
-    writer: Writer<Compat01As03<TcpStream>>,
+    writer: Writer<TcpStream>,
     discord_webhook: String,
     config: IrcConfig,
 ) -> Fallible<()> {
@@ -65,6 +65,6 @@ pub async fn handle_irc(
     Ok(())
 }
 
-pub async fn send_irc(writer: Writer<Compat01As03<TcpStream>>, msg: String) -> Fallible<()> {
+pub async fn send_irc(writer: Writer<TcpStream>, msg: String) -> Fallible<()> {
     writer.raw(msg).err_into().await
 }
