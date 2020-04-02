@@ -66,7 +66,17 @@ impl EventHandler for DiscordHandler {
                 } else {
                     info!("DIS> <{}> {}", name, line);
 
-                    if self.irc_config.ozinger_token.is_empty() {
+                    if let Some(ozinger) = self.irc_config.ozinger.clone() {
+                        let body = OzingerWebhookBody {
+                            token: ozinger.token,
+                            sender: name.to_string(),
+                            target: self.irc_config.channel.to_string(),
+                            message: line.to_string(),
+                        };
+                        spawn(async move {
+                            execute_webhook_ozinger(&body).await
+                        });
+                    } else {
                         let mut writer = self.irc_writer.clone();
                         let msg = format!("PRIVMSG {} :<{}> {}\n", self.irc_config.channel, name, line, );
                         spawn(async move {
@@ -74,16 +84,6 @@ impl EventHandler for DiscordHandler {
                                 .send(msg)
                                 .unwrap_or_else(|err| error!("mpsc send error: {}", err))
                                 .await
-                        });
-                    } else {
-                        let body = OzingerWebhookBody {
-                            token: self.irc_config.ozinger_token.to_string(),
-                            sender: name.to_string(),
-                            target: self.irc_config.channel.to_string(),
-                            message: line.to_string(),
-                        };
-                        spawn(async move {
-                            execute_webhook_ozinger(&body).await
                         });
                     }
                 }
