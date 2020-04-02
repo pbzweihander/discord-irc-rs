@@ -43,8 +43,8 @@ pub async fn handle_irc(
         }
         Code::Privmsg => {
             let content = &msg.args[1];
-            if let Some(Prefix::User(PrefixUser { nickname, .. })) = msg.prefix {
-                if config.ignores.contains(&nickname) {
+            if let Some(Prefix::User(PrefixUser { nickname, hostname, .. })) = msg.prefix {
+                if config.ignores.contains(&nickname) || hostname == format!("{}.apps.api.ozinger.org", config.ozinger_appslug) {
                     debug!("IRC| <{}(ignored)> {}", nickname, content);
                 } else {
                     info!("IRC> <{}> {}", nickname, content);

@@ -5,6 +5,8 @@ realname = ""
 nickname = ""
 channel = ""
 ignores = []
+ozinger_token = ""
+ozinger_appslug = ""
 
 [discord]
 token = ""

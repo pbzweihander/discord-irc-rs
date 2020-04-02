@@ -1,5 +1,8 @@
 use {
-    crate::config::*,
+    crate::{
+        config::*,
+        webhook::{execute_webhook_ozinger, OzingerWebhookBody},
+    },
     async_std::task::spawn,
     futures::{channel::mpsc::UnboundedSender, prelude::*},
     serenity::{model::channel::Message, prelude::*},
@@ -8,19 +11,19 @@ use {
 
 pub struct DiscordHandler {
     config: DiscordConfig,
-    irc_channel: String,
+    irc_config: IrcConfig,
     irc_writer: UnboundedSender<String>,
 }
 
 impl DiscordHandler {
     pub fn new(
         config: DiscordConfig,
-        irc_channel: String,
+        irc_config: IrcConfig,
         irc_writer: UnboundedSender<String>,
     ) -> Self {
         DiscordHandler {
             config,
-            irc_channel,
+            irc_config,
             irc_writer,
         }
     }
@@ -63,14 +66,26 @@ impl EventHandler for DiscordHandler {
                 } else {
                     info!("DIS> <{}> {}", name, line);
 
-                    let mut writer = self.irc_writer.clone();
-                    let msg = format!("PRIVMSG {} :<{}> {}\n", self.irc_channel, name, line,);
-                    spawn(async move {
-                        writer
-                            .send(msg)
-                            .unwrap_or_else(|err| error!("mpsc send error: {}", err))
-                            .await
-                    });
+                    if self.irc_config.ozinger_token.is_empty() {
+                        let mut writer = self.irc_writer.clone();
+                        let msg = format!("PRIVMSG {} :<{}> {}\n", self.irc_config.channel, name, line, );
+                        spawn(async move {
+                            writer
+                                .send(msg)
+                                .unwrap_or_else(|err| error!("mpsc send error: {}", err))
+                                .await
+                        });
+                    } else {
+                        let body = OzingerWebhookBody {
+                            token: self.irc_config.ozinger_token.to_string(),
+                            sender: name.to_string(),
+                            target: self.irc_config.channel.to_string(),
+                            message: line.to_string(),
+                        };
+                        spawn(async move {
+                            execute_webhook_ozinger(&body).await
+                        });
+                    }
                 }
             }
         } else {

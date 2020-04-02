@@ -9,6 +9,8 @@ pub struct IrcConfig {
     pub channel: String,
     #[serde(default)]
     pub ignores: Vec<String>,
+    pub ozinger_token: String,
+    pub ozinger_appslug: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
