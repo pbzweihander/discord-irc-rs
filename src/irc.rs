@@ -30,11 +30,17 @@ pub async fn handle_irc(
             debug!("IRC> PONG to {}", args);
         }
         Code::RplWelcome => {
+            if let Some(ozinger) = config.ozinger {
+                write_irc!(writer, "OPER {}\n", ozinger.authline);
+            }
             write_irc!(writer, "JOIN {}\n", config.channel);
 
             info!("IRC> Joinning to {}...", config.channel);
 
             return Ok(());
+        }
+        Code::RplYoureoper | Code::ErrNooperhost => {
+            info!("Operator authentication result: {}", msg.args[1]);
         }
         Code::Join => {
             if let Some(Prefix::User(PrefixUser { nickname, .. })) = msg.prefix {
@@ -43,16 +49,10 @@ pub async fn handle_irc(
         }
         Code::Privmsg => {
             let content = &msg.args[1];
-            if let Some(Prefix::User(PrefixUser { nickname, hostname, .. })) = msg.prefix {
+            if let Some(Prefix::User(PrefixUser { nickname, .. })) = msg.prefix {
                 if config.ignores.contains(&nickname) {
                     debug!("IRC| <{}(ignored)> {}", nickname, content);
                 } else {
-                    if let Some(ozinger) = config.ozinger {
-                        if hostname == format!("{}.apps.api.ozinger.org", ozinger.appslug) {
-                            return Ok(());
-                        }
-                    }
-
                     info!("IRC> <{}> {}", nickname, content);
 
                     let body = WebhookBody {

@@ -5,7 +5,9 @@ realname = ""
 nickname = ""
 channel = ""
 ignores = []
-ozinger = { token = "", appslug = "" }
+
+# [irc.ozinger]
+# authline = "id pw"
 
 [discord]
 token = ""
