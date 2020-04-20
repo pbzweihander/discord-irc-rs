@@ -6,6 +6,9 @@ nickname = ""
 channel = ""
 ignores = []
 
+# [irc.ozinger]
+# authline = "id pw"
+
 [discord]
 token = ""
 channel_id = 0

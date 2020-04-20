@@ -1,6 +1,11 @@
 use {failure::Fallible, serde::Deserialize, std::path::PathBuf};
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct IrcOzingerConfig {
+    pub authline: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct IrcConfig {
     pub url: String,
     pub username: String,
@@ -9,6 +14,7 @@ pub struct IrcConfig {
     pub channel: String,
     #[serde(default)]
     pub ignores: Vec<String>,
+    pub ozinger: Option<IrcOzingerConfig>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

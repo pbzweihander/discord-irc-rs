@@ -8,19 +8,19 @@ use {
 
 pub struct DiscordHandler {
     config: DiscordConfig,
-    irc_channel: String,
+    irc_config: IrcConfig,
     irc_writer: UnboundedSender<String>,
 }
 
 impl DiscordHandler {
     pub fn new(
         config: DiscordConfig,
-        irc_channel: String,
+        irc_config: IrcConfig,
         irc_writer: UnboundedSender<String>,
     ) -> Self {
         DiscordHandler {
             config,
-            irc_channel,
+            irc_config,
             irc_writer,
         }
     }
@@ -41,7 +41,7 @@ impl EventHandler for DiscordHandler {
             let Context { http, cache, .. } = ctx;
             let name = guild_id
                 .and_then(|guild_id| author.nick_in(http, guild_id))
-                .unwrap_or_else(|| author.name);
+                .unwrap_or(author.name);
 
             for user in mentions {
                 content = content.replace(&format!("{}", user.id), &user.name);
@@ -64,7 +64,15 @@ impl EventHandler for DiscordHandler {
                     info!("DIS> <{}> {}", name, line);
 
                     let mut writer = self.irc_writer.clone();
-                    let msg = format!("PRIVMSG {} :<{}> {}\n", self.irc_channel, name, line,);
+                    let msg = match self.irc_config.ozinger {
+                        Some(_) => format!("FAKEMSG {}＠d!{:x}@pbzweihander/discord-irc-rs {} :{}\n",
+                            name.replace("!", "ǃ").replace("@", "＠"), // U+0021 -> U+01C3, U+0040 -> U+FE6B
+                            author.id.0,
+                            self.irc_config.channel,
+                            line,
+                        ),
+                        None => format!("PRIVMSG {} :<{}> {}\n", self.irc_config.channel, name, line, ),
+                    };
                     spawn(async move {
                         writer
                             .send(msg)

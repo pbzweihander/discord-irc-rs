@@ -89,7 +89,7 @@ fn main() -> Fallible<()> {
 
     let mut client = serenity::Client::new(
         &discord.token.clone(),
-        DiscordHandler::new(discord, irc.channel, irc_sender),
+        DiscordHandler::new(discord, irc, irc_sender),
     )?;
 
     client.start()?;
