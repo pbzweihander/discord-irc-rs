@@ -65,13 +65,16 @@ impl EventHandler for DiscordHandler {
 
                     let mut writer = self.irc_writer.clone();
                     let msg = match self.irc_config.ozinger {
-                        Some(_) => format!("FAKEMSG {}＠d!{:x}@pbzweihander/discord-irc-rs {} :{}\n",
+                        Some(_) => format!(
+                            "FAKEMSG {}＠d!{:x}@pbzweihander/discord-irc-rs {} :{}\n",
                             name.replace("!", "ǃ").replace("@", "＠"), // U+0021 -> U+01C3, U+0040 -> U+FE6B
                             author.id.0,
                             self.irc_config.channel,
                             line,
                         ),
-                        None => format!("PRIVMSG {} :<{}> {}\n", self.irc_config.channel, name, line, ),
+                        None => {
+                            format!("PRIVMSG {} :<{}> {}\n", self.irc_config.channel, name, line,)
+                        }
                     };
                     spawn(async move {
                         writer
