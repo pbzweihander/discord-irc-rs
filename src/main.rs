@@ -4,6 +4,7 @@ extern crate log;
 mod config;
 mod discord;
 mod irc;
+mod utils;
 mod webhook;
 
 use {

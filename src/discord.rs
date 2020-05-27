@@ -1,5 +1,5 @@
 use {
-    crate::config::*,
+    crate::{config::*, utils::normalize_irc_nickname},
     async_std::task::spawn,
     futures::{channel::mpsc::UnboundedSender, prelude::*},
     serenity::{model::channel::Message, prelude::*},
@@ -67,7 +67,7 @@ impl EventHandler for DiscordHandler {
                     let msg = match self.irc_config.ozinger {
                         Some(_) => format!(
                             "FAKEMSG {}＠d!{:x}@pbzweihander/discord-irc-rs {} :{}\n",
-                            name.replace("!", "ǃ").replace("@", "＠"), // U+0021 -> U+01C3, U+0040 -> U+FE6B
+                            normalize_irc_nickname(&name),
                             author.id.0,
                             self.irc_config.channel,
                             line,
