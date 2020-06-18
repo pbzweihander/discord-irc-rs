@@ -39,6 +39,7 @@ impl EventHandler for DiscordHandler {
                 ..
             } = msg;
             let Context { http, cache, .. } = ctx;
+            let id = author.id.0;
             let name = guild_id
                 .and_then(|guild_id| author.nick_in(http, guild_id))
                 .unwrap_or(author.name);
@@ -57,32 +58,42 @@ impl EventHandler for DiscordHandler {
                 .map(|s| Cow::Borrowed(s))
                 .chain(attachments.into_iter().map(|at| at.url).map(Into::into));
 
-            for line in lines {
-                if self.config.ignores.contains(&name) {
+            if self.config.ignores.contains(&name) {
+                for line in lines {
                     debug!("DIS| <{}(ignored)> {}", name, line);
-                } else {
-                    info!("DIS> <{}> {}", name, line);
-
-                    let mut writer = self.irc_writer.clone();
-                    let msg = match self.irc_config.ozinger {
-                        Some(_) => format!(
-                            "FAKEMSG {}＠d!{:x}@pbzweihander/discord-irc-rs {} :{}\n",
-                            normalize_irc_nickname(&name),
-                            author.id.0,
-                            self.irc_config.channel,
-                            line,
-                        ),
-                        None => {
-                            format!("PRIVMSG {} :<{}> {}\n", self.irc_config.channel, name, line,)
-                        }
-                    };
-                    spawn(async move {
-                        writer
-                            .send(msg)
-                            .unwrap_or_else(|err| error!("mpsc send error: {}", err))
-                            .await
-                    });
                 }
+            } else {
+                let is_ozinger = self.irc_config.ozinger.is_some();
+                let channel = self.irc_config.channel.clone();
+                let lines: Vec<String> = lines
+                    .map(move |line| {
+                        info!("DIS> <{}> {}", name, line);
+                        if is_ozinger {
+                            format!(
+                                "FAKEMSG {}＠d!{:x}@pbzweihander/discord-irc-rs {} :{}\n",
+                                normalize_irc_nickname(&name),
+                                id,
+                                channel,
+                                line,
+                            )
+                        } else {
+                            format!("PRIVMSG {} :<{}> {}\n", channel, name, line)
+                        }
+                    })
+                    .collect();
+
+                let mut writer = self.irc_writer.clone();
+
+                let fut = async move {
+                    for line in lines {
+                        writer
+                            .send(line)
+                            .unwrap_or_else(|err| error!("mpsc send error: {}", err))
+                            .await;
+                    }
+                };
+
+                spawn(fut);
             }
         } else {
             debug!("DIS> {:?}", msg);
