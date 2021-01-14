@@ -6,26 +6,30 @@ orbs:
 workflows:
   lint-and-build:
     jobs:
-      - lint
-      - build:
-          requires:
-            - lint
-      - docker/publish:
-          requires:
-            - build
-          image: pbzweihander/discord-irc-rs
-          tag: latest
-          dockerfile: Dockerfile-ci
-          before_build:
-            - attach_workspace:
-                at: target
-          after_build:
-            - run: |
-                docker tag \
-                  pbzweihander/discord-irc-rs:latest \
-                  pbzweihander/discord-irc-rs:$CIRCLE_SHA1
-            - docker/push:
-                image: pbzweihander/discord-irc-rs
+    - lint
+    - build:
+        requires:
+        - lint
+    - docker/publish:
+        requires:
+        - build
+        filters:
+          branches:
+            only:
+            - master
+        image: pbzweihander/discord-irc-rs
+        tag: latest
+        dockerfile: Dockerfile-ci
+        before_build:
+        - attach_workspace:
+            at: target
+        after_build:
+        - run: |
+            docker tag \
+              pbzweihander/discord-irc-rs:latest \
+              pbzweihander/discord-irc-rs:$CIRCLE_SHA1
+        - docker/push:
+            image: pbzweihander/discord-irc-rs
 
 jobs:
   lint:
