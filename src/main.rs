@@ -5,17 +5,13 @@ mod config;
 mod discord;
 mod irc;
 mod utils;
-mod webhook;
 
 use {
     crate::{config::*, discord::*, irc::*},
-    async_std::{
-        net::TcpStream,
-        task::{block_on, spawn},
-    },
+    async_std::net::TcpStream,
     failure::{err_msg, Fallible},
     futures::{channel::mpsc, future::join, prelude::*},
-    std::{env::args, net::ToSocketAddrs, process::exit, thread},
+    std::{env::args, net::ToSocketAddrs, process::exit},
     yaircc::*,
 };
 
@@ -29,7 +25,9 @@ macro_rules! write_irc {
 
 async fn spawn_irc(
     config: IrcConfig,
-    discord_webhook: String,
+    discord_http: std::sync::Arc<serenity::http::client::Http>,
+    discord_webhook_id: u64,
+    discord_webhook_token: String,
     irc_receiver: mpsc::UnboundedReceiver<String>,
 ) -> Fallible<()> {
     let tcp_stream = TcpStream::connect(&config.url.to_socket_addrs()?.next().unwrap()).await?;
@@ -43,34 +41,39 @@ async fn spawn_irc(
         config.username,
         config.realname
     );
+    if let Some(password) = &config.password {
+        write_irc!(writer, "PASS {}\n", password);
+    }
     write_irc!(writer, "NICK {}\n", config.nickname);
 
-    let reader_handle = spawn(
-        irc_stream
-            .err_into()
-            .and_then(move |msg| {
-                handle_irc(msg, writer.clone(), discord_webhook.clone(), config.clone())
-            })
-            .try_collect()
-            .unwrap_or_else(|err| error!("IrcStream error: {}", err))
-            .map(|_| exit(1)),
-    );
+    let reader_fut = irc_stream
+        .err_into()
+        .and_then(move |msg| {
+            handle_irc(
+                discord_http.clone(),
+                msg,
+                writer.clone(),
+                discord_webhook_id,
+                discord_webhook_token.clone(),
+                config.clone(),
+            )
+        })
+        .try_collect()
+        .unwrap_or_else(|err| error!("IrcStream error: {}", err));
 
-    let writer_handle = spawn(
-        irc_receiver
-            .for_each(move |msg| {
-                send_irc(writer_clone.clone(), msg)
-                    .unwrap_or_else(|err| error!("Irc send error: {}", err))
-            })
-            .map(|_| exit(1)),
-    );
+    let writer_fut = irc_receiver
+        .for_each(move |msg| {
+            send_irc(writer_clone.clone(), msg)
+                .unwrap_or_else(|err| error!("Irc send error: {}", err))
+        });
 
-    join(reader_handle, writer_handle).await;
+    join(reader_fut, writer_fut).await;
 
     Ok(())
 }
 
-fn main() -> Fallible<()> {
+#[async_std::main]
+async fn main() -> Fallible<()> {
     env_logger::try_init()?;
 
     let args: Vec<_> = args().take(2).collect();
@@ -80,20 +83,22 @@ fn main() -> Fallible<()> {
     let Config { irc, discord } = Config::from_path(&args[1])?;
     let (irc_sender, irc_receiver) = mpsc::unbounded();
 
-    let irc_fut =
-        spawn_irc(irc.clone(), discord.webhook_url.clone(), irc_receiver).map(Result::unwrap);
+    let webhook_id = discord.webhook_id;
+    let webhook_token = discord.webhook_token.clone();
+    let mut client = serenity::Client::builder(&discord.token.clone())
+        .event_handler(DiscordHandler::new(discord, irc.clone(), irc_sender))
+        .await?;
 
-    thread::spawn(move || {
-        block_on(irc_fut);
-        exit(1);
-    });
+    let irc_fut = spawn_irc(
+        irc,
+        client.cache_and_http.http.clone(),
+        webhook_id,
+        webhook_token,
+        irc_receiver,
+    );
+    let client_fut = client.start().map_err(failure::Error::from);
 
-    let mut client = serenity::Client::new(
-        &discord.token.clone(),
-        DiscordHandler::new(discord, irc, irc_sender),
-    )?;
-
-    client.start()?;
+    futures::future::try_join(irc_fut, client_fut).await?;
 
     exit(1)
 }

@@ -10,10 +10,11 @@ pub struct WebhookBody {
 }
 
 pub async fn execute_webhook(url: &str, body: &WebhookBody) -> Fallible<()> {
+    let body = surf::Body::from_json(body)
+        .map_err(|err| AsRef::<dyn std::error::Error + Send + Sync>::as_ref(&err))?;
     let resp = surf::post(url)
-        .body_json(body)?
-        .await
-        .map_err(Error::from_boxed_compat)?;
+        .body(body)
+        .await?;
     let status = resp.status();
     if !status.is_success() {
         Err(err_msg(status.as_str().to_string()))

@@ -10,6 +10,8 @@ pub struct IrcConfig {
     pub url: String,
     pub username: String,
     pub realname: String,
+    #[serde(default)]
+    pub password: Option<String>,
     pub nickname: String,
     pub channel: String,
     #[serde(default)]
@@ -21,7 +23,8 @@ pub struct IrcConfig {
 pub struct DiscordConfig {
     pub token: String,
     pub channel_id: u64,
-    pub webhook_url: String,
+    pub webhook_id: u64,
+    pub webhook_token: String,
     #[serde(default)]
     pub ignores: Vec<String>,
 }
