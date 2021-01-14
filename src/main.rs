@@ -61,11 +61,9 @@ async fn spawn_irc(
         .try_collect()
         .unwrap_or_else(|err| error!("IrcStream error: {}", err));
 
-    let writer_fut = irc_receiver
-        .for_each(move |msg| {
-            send_irc(writer_clone.clone(), msg)
-                .unwrap_or_else(|err| error!("Irc send error: {}", err))
-        });
+    let writer_fut = irc_receiver.for_each(move |msg| {
+        send_irc(writer_clone.clone(), msg).unwrap_or_else(|err| error!("Irc send error: {}", err))
+    });
 
     join(reader_fut, writer_fut).await;
 
