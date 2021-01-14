@@ -34,7 +34,7 @@ workflows:
 jobs:
   lint:
     docker:
-      - image: clux/muslrust:stable-2019-11-04
+      - image: clux/muslrust:stable
     working_directory: /app
     steps:
       - run:
@@ -68,7 +68,7 @@ jobs:
 
   build:
     docker:
-      - image: clux/muslrust:stable-2019-11-04
+      - image: clux/muslrust:stable
     working_directory: /app
     steps:
       - run:

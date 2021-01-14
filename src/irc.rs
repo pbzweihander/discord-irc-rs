@@ -1,9 +1,5 @@
 use {
-    crate::{
-        config::IrcConfig,
-        webhook::{execute_webhook, WebhookBody},
-        write_irc,
-    },
+    crate::{config::IrcConfig, write_irc},
     async_std::net::TcpStream,
     failure::Fallible,
     futures::prelude::*,
@@ -11,9 +7,11 @@ use {
 };
 
 pub async fn handle_irc(
+    http: std::sync::Arc<serenity::http::client::Http>,
     msg: Message,
     writer: Writer<TcpStream>,
-    discord_webhook: String,
+    webhook_id: u64,
+    webhook_token: String,
     config: IrcConfig,
 ) -> Fallible<()> {
     match msg.code {
@@ -55,11 +53,12 @@ pub async fn handle_irc(
                 } else {
                     info!("IRC> <{}> {}", nickname, content);
 
-                    let body = WebhookBody {
-                        content: content.to_string(),
-                        username: nickname,
-                    };
-                    execute_webhook(&discord_webhook, &body).await?;
+                    http.get_webhook_with_token(webhook_id, &webhook_token)
+                        .await?
+                        .execute(http, true, |builder| {
+                            builder.username(nickname).content(content)
+                        })
+                        .await?;
                 }
             }
         }

@@ -13,16 +13,21 @@ futures = "0.3.1"
 log = "0.4.8"
 serde = "1.0.104"
 yaircc = "0.1.0"
-async-std = "1.4.0"
-surf = "1.0.3"
+
+[dependencies.async-std]
+version = "1.8.0"
+features = ["attributes", "tokio02"]
 
 [dependencies.serenity]
-version = "0.7.4"
+version = "0.10.2"
 default-features = false
 features = [
+    "builder",
     "cache",
     "client",
+    "gateway",
     "model",
-    "rustls_backend",
+    "http",
+    "rustls_tokio_0_2_backend",
     "utils",
 ]
