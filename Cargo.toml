@@ -5,18 +5,14 @@ authors = ["pbzweihander <pbzweihander@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-configc = { version = "0.10.1", package = "config" }
+anyhow = "1.0.38"
 env_logger = "0.7.1"
-encoding = "0.2.33"
-failure = "0.1.6"
 futures = "0.3.1"
+libconfig = { version = "0.10.1", package = "config" }
+libirc = { version = "0.14.1", package = "irc" }
 log = "0.4.8"
 serde = "1.0.104"
-yaircc = "0.1.0"
-
-[dependencies.async-std]
-version = "1.8.0"
-features = ["attributes", "tokio02"]
+tokio = { version = "0.2.25", features = ["macros", "rt-core"] }
 
 [dependencies.serenity]
 version = "0.10.2"

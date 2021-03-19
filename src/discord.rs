@@ -1,26 +1,25 @@
-use {
-    crate::{config::*, utils::normalize_irc_nickname},
-    futures::{channel::mpsc::UnboundedSender, prelude::*},
-    serenity::{model::channel::Message, prelude::*},
-    std::borrow::Cow,
-};
+use std::borrow::Cow;
+
+use libirc::client::prelude::Command as IrcCommand;
+use libirc::client::Sender;
+use serenity::model::channel::Message;
+use serenity::prelude::*;
+
+use crate::config::*;
+use crate::utils::normalize_irc_nickname;
 
 pub struct DiscordHandler {
     config: DiscordConfig,
     irc_config: IrcConfig,
-    irc_writer: UnboundedSender<String>,
+    irc_sender: Sender,
 }
 
 impl DiscordHandler {
-    pub fn new(
-        config: DiscordConfig,
-        irc_config: IrcConfig,
-        irc_writer: UnboundedSender<String>,
-    ) -> Self {
+    pub fn new(config: DiscordConfig, irc_config: IrcConfig, irc_sender: Sender) -> Self {
         DiscordHandler {
             config,
             irc_config,
-            irc_writer,
+            irc_sender,
         }
     }
 }
@@ -46,31 +45,28 @@ impl EventHandler for DiscordHandler {
                 }
             } else {
                 let is_ozinger = self.irc_config.ozinger.is_some();
-                let channel = self.irc_config.channel.clone();
-                let lines: Vec<String> = lines
-                    .map(move |line| {
-                        info!("DIS> <{}> {}", name, line);
-                        if is_ozinger {
-                            format!(
-                                "FAKEMSG {}＠d!{:x}@pbzweihander/discord-irc-rs {} :{}\n",
-                                normalize_irc_nickname(&name),
-                                id,
-                                channel,
-                                line,
-                            )
-                        } else {
-                            format!("PRIVMSG {} :<{}> {}\n", channel, name, line)
-                        }
-                    })
-                    .collect();
-
-                let mut writer = self.irc_writer.clone();
-
+                let channel = &self.irc_config.channel;
                 for line in lines {
-                    writer
-                        .send(line)
-                        .unwrap_or_else(|err| error!("mpsc send error: {}", err))
-                        .await;
+                    info!("DIS> <{}> {}", name, line);
+                    let command = if is_ozinger {
+                        IrcCommand::Raw(
+                            "FAKEMSG".to_string(),
+                            vec![
+                                format!(
+                                    "{}＠d!{:x}@pbzweihander/discord-irc-rs",
+                                    normalize_irc_nickname(&name),
+                                    id
+                                ),
+                                channel.to_string(),
+                                format!(":{}", line),
+                            ],
+                        )
+                    } else {
+                        IrcCommand::PRIVMSG(channel.to_string(), format!("<{}> {}", name, line))
+                    };
+                    if let Err(e) = self.irc_sender.send(command) {
+                        error!("Discord to IRC send error: {}", e)
+                    }
                 }
             }
         } else {

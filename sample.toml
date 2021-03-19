@@ -1,8 +1,10 @@
 [irc]
-url = ""
+server = ""
+port = 6667
+# password = ""
+use_tls = true
 username = ""
 realname = ""
-# password = ""
 nickname = ""
 channel = ""
 ignores = []

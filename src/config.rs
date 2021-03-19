@@ -1,4 +1,8 @@
-use {failure::Fallible, serde::Deserialize, std::path::PathBuf};
+use std::path::PathBuf;
+
+use anyhow::Result;
+use libirc::client::data::Config as IrcConnectionConfig;
+use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct IrcOzingerConfig {
@@ -7,12 +11,8 @@ pub struct IrcOzingerConfig {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct IrcConfig {
-    pub url: String,
-    pub username: String,
-    pub realname: String,
-    #[serde(default)]
-    pub password: Option<String>,
-    pub nickname: String,
+    #[serde(flatten)]
+    pub connection: IrcConnectionConfig,
     pub channel: String,
     #[serde(default)]
     pub ignores: Vec<String>,
@@ -36,11 +36,11 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn from_path(path: impl Into<PathBuf>) -> Fallible<Self> {
-        let mut config = configc::Config::default();
+    pub fn from_path(path: impl Into<PathBuf>) -> Result<Self> {
+        let mut config = libconfig::Config::default();
         config
-            .merge(configc::File::from(path.into()))?
-            .merge(configc::Environment::with_prefix("APP"))?;
+            .merge(libconfig::File::from(path.into()))?
+            .merge(libconfig::Environment::with_prefix("APP"))?;
         config.try_into().map_err(Into::into)
     }
 }
