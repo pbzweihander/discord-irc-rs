@@ -2,6 +2,7 @@ use anyhow::Result;
 use libirc::client::prelude::{Command, Message, Prefix};
 
 use crate::config::{DiscordConfig, IrcConfig};
+use crate::format::irc_msg_to_discord;
 
 pub async fn handle_irc(
     msg: Message,
@@ -24,6 +25,7 @@ pub async fn handle_irc(
                 } else {
                     info!("IRC> <{}> {}", nickname, content);
 
+                    let content = irc_msg_to_discord(&content);
                     http.get_webhook_with_token(webhook_id, &webhook_token)
                         .await?
                         .execute(http, true, |builder| {
