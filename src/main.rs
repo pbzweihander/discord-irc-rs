@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 mod config;
 mod discord;
@@ -51,7 +51,7 @@ async fn irc_handler_future(
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    env_logger::try_init()?;
+    tracing_subscriber::fmt::init();
 
     let args: Vec<_> = args().take(2).collect();
     if args.len() != 2 {
