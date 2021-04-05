@@ -12,7 +12,7 @@ Requires 1.39+ version of rustc.
 ```bash
 $ cp sample.toml config.toml
 # Edit config.toml ...
-$ cargo run -- config.toml
+$ RUST_LOG=info cargo run -- config.toml
 ```
 
 OR
@@ -20,7 +20,7 @@ OR
 ```bash
 $ cp sample.toml config.toml
 # Edit config.toml ...
-$ docker run --rm -it -v $PWD/config.toml:/config.toml pbzweihander/discord-irc-rs
+$ docker run --rm -it -e RUST_LOG=info -v $PWD/config.toml:/config.toml pbzweihander/discord-irc-rs
 ```
 
 ------
