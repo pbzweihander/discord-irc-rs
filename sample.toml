@@ -17,6 +17,10 @@ username = ""
 ## Realname will be displayed in "WHOIS" command of IRC.
 realname = ""
 
+## For more IRC connection options, see the following links:
+## - https://github.com/aatxe/irc#configuring-irc-clients
+## - https://docs.rs/irc/0.15.0/irc/client/data/config/struct.Config.html#fields
+
 ## Channel to connect. (ex: "#bla")
 channel = ""
 ## IRC user nicknames to ignore. (ex: ["github", "notifico"])
