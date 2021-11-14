@@ -1,21 +1,50 @@
 [irc]
+## Hostname of target IRC server. (ex: "irc.libera.chat")
 server = ""
-port = 6667
+## Port number of target IRC server. The standard port for IRC connection is
+## 6667 for plaintext, and 6697 for TLS connection.
+port = 6697
+## (Optional) Password for the IRC connection.
 # password = ""
+## Set true to use TLS connection.
 use_tls = true
-username = ""
-realname = ""
+
+## Nickname of IRC bot.
 nickname = ""
+## Username of IRC bot. Typically your username will be displayed along with
+## your hostname as "username@host".
+username = ""
+## Realname will be displayed in "WHOIS" command of IRC.
+realname = ""
+
+## Channel to connect. (ex: "#bla")
 channel = ""
+## IRC user nicknames to ignore. (ex: ["github", "notifico"])
 ignores = []
 # bridge_member_changes = false
 
+## Special config for ozinger.org IRC network.
 # [irc.ozinger]
 # authline = "id pw"
 
 [discord]
+## "Application ID" of Discord application. Please refer to the following links
+## on how to create an application (a.k.a. bot account) and retrieve a token
+## from it:
+## - https://discordpy.readthedocs.io/en/stable/discord.html
+## - https://discord.com/developers/applications
 token = ""
+
+## Discord channel ID. Please refer to the following link on how to get the
+## channel ID:
+## - https://support.discord.com/hc/en-us/articles/206346498
 channel_id = 0
+
+## Discord webhook ID and token. Discord webhook URL has the following format:
+##
+##     https://discord.com/api/webhooks/{webhook_id}/{webhook_token}
 webhook_id = 0
 webhook_token = ""
+
+## Discord user nicknames to ignore.
 ignores = []
