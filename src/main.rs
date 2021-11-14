@@ -17,27 +17,17 @@ use libirc::client::Client;
 async fn irc_handler_future(
     mut irc_client: Client,
     discord_http: Arc<serenity::http::client::Http>,
-    discord_webhook_id: u64,
-    discord_webhook_token: String,
     irc_config: config::IrcConfig,
+    discord_config: config::DiscordConfig,
 ) -> Result<()> {
     irc_client
         .stream()?
         .err_into()
         .and_then(|msg| {
             let discord_http = discord_http.clone();
-            let discord_webhook_token = discord_webhook_token.clone();
             let irc_config = irc_config.clone();
-            async move {
-                irc::handle_irc(
-                    msg,
-                    &discord_http,
-                    discord_webhook_id,
-                    discord_webhook_token,
-                    irc_config,
-                )
-                .await
-            }
+            let discord_config = discord_config.clone();
+            async move { irc::handle_irc(msg, &discord_http, irc_config, discord_config).await }
         })
         .map(|res| {
             if let Err(err) = res {
@@ -78,9 +68,8 @@ async fn main() -> Result<()> {
     let irc_fut = irc_handler_future(
         irc_client,
         discord_client.cache_and_http.http.clone(),
-        discord_config.webhook_id,
-        discord_config.webhook_token,
         irc_config,
+        discord_config,
     );
 
     let discord_fut = discord_client.start().map_err(anyhow::Error::from);

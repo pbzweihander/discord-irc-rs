@@ -8,6 +8,7 @@ realname = ""
 nickname = ""
 channel = ""
 ignores = []
+# bridge_member_changes = false
 
 # [irc.ozinger]
 # authline = "id pw"

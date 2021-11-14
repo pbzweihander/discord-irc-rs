@@ -17,6 +17,8 @@ pub struct IrcConfig {
     #[serde(default)]
     pub ignores: Vec<String>,
     pub ozinger: Option<IrcOzingerConfig>,
+    #[serde(default)]
+    pub bridge_member_changes: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
