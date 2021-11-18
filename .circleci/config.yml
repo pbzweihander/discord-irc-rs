@@ -34,7 +34,7 @@ workflows:
 jobs:
   lint:
     docker:
-    - image: clux/muslrust:1.50.0-stable
+    - image: clux/muslrust:1.56.1-stable
     working_directory: /app
     steps:
     - run:
@@ -48,9 +48,9 @@ jobs:
     - checkout
     - restore_cache:
         keys:
-        - cache-v2-debug-{{ .Branch }}-{{ checksum "Cargo.lock" }}-
-        - cache-v2-debug-{{ .Branch }}-
-        - cache-v2-debug-
+        - cache-v3-debug-{{ .Branch }}-{{ checksum "Cargo.lock" }}-
+        - cache-v3-debug-{{ .Branch }}-
+        - cache-v3-debug-
     - run:
         name: Running fmt check...
         command: |
@@ -64,11 +64,11 @@ jobs:
         - /root/.cargo/registry
         - target/x86_64-unknown-linux-musl/debug/deps
         - target/x86_64-unknown-linux-musl/debug/build
-        key: cache-v2-debug-{{ .Branch }}-{{ checksum "Cargo.lock" }}-{{ epoch }}
+        key: cache-v3-debug-{{ .Branch }}-{{ checksum "Cargo.lock" }}-{{ epoch }}
 
   build:
     docker:
-    - image: clux/muslrust:1.50.0-stable
+    - image: clux/muslrust:1.56.1-stable
     working_directory: /app
     steps:
     - run:
@@ -78,9 +78,9 @@ jobs:
     - checkout
     - restore_cache:
         keys:
-        - cache-v2-release-{{ .Branch }}-{{ checksum "Cargo.lock" }}-
-        - cache-v2-release-{{ .Branch }}-
-        - cache-v2-release-
+        - cache-v3-release-{{ .Branch }}-{{ checksum "Cargo.lock" }}-
+        - cache-v3-release-{{ .Branch }}-
+        - cache-v3-release-
     - run:
         name: Building...
         command: |
@@ -96,4 +96,4 @@ jobs:
         - /root/.cargo/registry
         - target/x86_64-unknown-linux-musl/release/deps
         - target/x86_64-unknown-linux-musl/release/build
-        key: cache-v2-release-{{ .Branch }}-{{ checksum "Cargo.lock" }}-{{ epoch }}
+        key: cache-v3-release-{{ .Branch }}-{{ checksum "Cargo.lock" }}-{{ epoch }}

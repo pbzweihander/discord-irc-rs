@@ -1,4 +1,4 @@
-FROM clux/muslrust:1.50.0-stable
+FROM clux/muslrust:1.56.1-stable
 
 WORKDIR /
 RUN USER=root cargo new --bin app
