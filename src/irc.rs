@@ -1,12 +1,14 @@
 use anyhow::Result;
-use libirc::client::prelude::{Command, Message, Prefix};
+use libirc::client::prelude::{Command, Message, Prefix, Response};
+use libirc::client::Sender;
 
 use crate::config::{DiscordConfig, IrcConfig};
 use crate::format::irc_msg_to_discord;
 
 pub async fn handle_irc(
     msg: Message,
-    http: &serenity::http::client::Http,
+    irc_sender: Sender,
+    discord_http: &serenity::http::client::Http,
     config: IrcConfig,
     discord: DiscordConfig,
 ) -> Result<()> {
@@ -18,6 +20,13 @@ pub async fn handle_irc(
     } = discord;
     match msg.command {
         Command::ERROR(args) => error!("IRC> Error {}", args),
+        Command::Response(Response::RPL_WELCOME, _) => {
+            if let Some(ozinger) = config.ozinger {
+                irc_sender.send_oper(ozinger.username, ozinger.password)?;
+            }
+
+            irc_sender.send_join(&config.channel)?;
+        }
         Command::PRIVMSG(_, content) => {
             if let Some(Prefix::Nickname(nickname, _, _)) = msg.prefix {
                 if config.ignores.contains(&nickname) {
@@ -26,9 +35,10 @@ pub async fn handle_irc(
                     info!("IRC> <{}> {}", nickname, content);
 
                     let content = irc_msg_to_discord(&content);
-                    http.get_webhook_with_token(webhook_id, &webhook_token)
+                    discord_http
+                        .get_webhook_with_token(webhook_id, &webhook_token)
                         .await?
-                        .execute(http, true, |builder| {
+                        .execute(discord_http, true, |builder| {
                             builder.username(nickname).content(content)
                         })
                         .await?;
@@ -43,7 +53,7 @@ pub async fn handle_irc(
                 {
                     serenity::model::id::ChannelId::from(channel_id)
                         .say(
-                            http,
+                            discord_http,
                             format_args!("**{}** has joined the channel.", nickname),
                         )
                         .await?;
@@ -63,7 +73,7 @@ pub async fn handle_irc(
                         message.push_str("`)");
                     }
                     serenity::model::id::ChannelId::from(channel_id)
-                        .say(http, message)
+                        .say(discord_http, message)
                         .await?;
                 }
             }
@@ -82,7 +92,7 @@ pub async fn handle_irc(
                         message.push_str("`)");
                     }
                     serenity::model::id::ChannelId::from(channel_id)
-                        .say(http, message)
+                        .say(discord_http, message)
                         .await?;
                 }
             }

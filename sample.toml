@@ -30,7 +30,8 @@ ignores = []
 
 ## Special config for ozinger.org IRC network.
 # [irc.ozinger]
-# authline = "id pw"
+# username = "id"
+# password = "pw"
 
 [discord]
 ## "Application ID" of Discord application. Please refer to the following links

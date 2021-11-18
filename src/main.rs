@@ -21,14 +21,18 @@ async fn irc_handler_future(
     irc_config: config::IrcConfig,
     discord_config: config::DiscordConfig,
 ) -> Result<()> {
+    let irc_sender = irc_client.sender();
     irc_client
         .stream()?
         .err_into()
         .and_then(|msg| {
+            let irc_sender = irc_sender.clone();
             let discord_http = discord_http.clone();
             let irc_config = irc_config.clone();
             let discord_config = discord_config.clone();
-            async move { irc::handle_irc(msg, &discord_http, irc_config, discord_config).await }
+            async move {
+                irc::handle_irc(msg, irc_sender, &discord_http, irc_config, discord_config).await
+            }
         })
         .map(|res| {
             if let Err(err) = res {
@@ -56,7 +60,6 @@ async fn main() -> Result<()> {
     let irc_client = Client::from_config(irc_config.connection.clone()).await?;
     let irc_sender = irc_client.sender();
     irc_client.identify()?;
-    irc_client.send_join(&irc_config.channel)?;
 
     let mut discord_client = serenity::Client::builder(&discord_config.token.clone())
         .event_handler(discord::DiscordHandler::new(
