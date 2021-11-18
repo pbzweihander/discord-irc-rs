@@ -15,6 +15,7 @@ tracing-subscriber = "0.2.17"
 
 [dependencies.libirc]
 package = "irc"
+# FIXME: Use original crate when https://github.com/aatxe/irc/pull/236 merged
 git = "https://github.com/simnalamburt/irc"
 default-features = false
 features = ["ctcp", "tls-rust", "toml_config"]
