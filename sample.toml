@@ -27,6 +27,9 @@ channel = ""
 ignores = []
 ## Set true to bridge changes of IRC members.
 # bridge_member_changes = false
+## By setting this option as `true`, you can keep the bot from notifying people with nicknames
+## by inserting zero width spaces (U+200B) into nicknames.
+# prevent_noti_by_nicknames = false
 
 ## Special config for ozinger.org IRC network.
 # [irc.ozinger]
