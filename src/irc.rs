@@ -1,6 +1,7 @@
 use anyhow::Result;
 use libirc::client::prelude::{Command, Message, Prefix, Response};
 use libirc::client::Sender;
+use serenity::{builder::ExecuteWebhook, utils::hashmap_to_json_map};
 
 use crate::config::{DiscordConfig, IrcConfig};
 use crate::format::irc_msg_to_discord;
@@ -35,13 +36,12 @@ pub async fn handle_irc(
                     info!("IRC> <{}> {}", nickname, content);
 
                     let content = irc_msg_to_discord(&content);
+                    let mut builder = ExecuteWebhook::default();
+                    builder.username(nickname).content(content);
+                    let json = hashmap_to_json_map(builder.0);
                     discord
                         .http
-                        .get_webhook_with_token(webhook_id, &webhook_token)
-                        .await?
-                        .execute(&discord.http, true, |builder| {
-                            builder.username(nickname).content(content)
-                        })
+                        .execute_webhook(webhook_id, &webhook_token, true, &json)
                         .await?;
                 }
             }
