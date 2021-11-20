@@ -58,7 +58,7 @@ impl EventHandler for DiscordHandler {
                                     id
                                 ),
                                 channel.to_string(),
-                                format!("{}", line),
+                                line.into_owned(),
                             ],
                         )
                     } else {
