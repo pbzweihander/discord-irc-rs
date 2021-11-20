@@ -35,9 +35,17 @@ pub async fn handle_irc(
                 } else {
                     info!("IRC> <{}> {}", nickname, content);
 
+                    let mut avatar = None;
+                    if config.auto_detect_avatar {
+                        avatar = auto_detect_avatar(&discord.cache, channel_id, &nickname).await;
+                    }
+
                     let content = irc_msg_to_discord(&content);
                     let mut builder = ExecuteWebhook::default();
                     builder.username(nickname).content(content);
+                    if let Some(avatar) = avatar {
+                        builder.avatar_url(avatar);
+                    }
                     let json = hashmap_to_json_map(builder.0);
                     discord
                         .http
@@ -104,4 +112,28 @@ pub async fn handle_irc(
     }
 
     Ok(())
+}
+
+async fn auto_detect_avatar(
+    cache: &serenity::cache::Cache,
+    channel_id: u64,
+    nickname: &str,
+) -> Option<String> {
+    match cache.guild_channel(channel_id).await {
+        None => {}
+        Some(channel) => match channel.members(&cache).await {
+            Err(_) => {}
+            Ok(members) => {
+                for member in members {
+                    if *member.display_name() == nickname {
+                        return Some(member.face());
+                    }
+                }
+                return None;
+            }
+        },
+    };
+
+    warn!("Cache missed while it should never be missed");
+    None
 }

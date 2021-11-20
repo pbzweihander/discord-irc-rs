@@ -14,6 +14,7 @@ use std::sync::Arc;
 use anyhow::{bail, Result};
 use futures::prelude::*;
 use libirc::client::Client;
+use serenity::client::bridge::gateway::GatewayIntents;
 
 async fn irc_handler_future(
     mut irc_client: Client,
@@ -61,12 +62,18 @@ async fn main() -> Result<()> {
     let irc_sender = irc_client.sender();
     irc_client.identify()?;
 
+    let mut intents = GatewayIntents::GUILDS | GatewayIntents::GUILD_MESSAGES;
+    if irc_config.auto_detect_avatar {
+        intents |= GatewayIntents::GUILD_MEMBERS | GatewayIntents::GUILD_PRESENCES;
+    }
+
     let mut discord_client = serenity::Client::builder(&discord_config.token.clone())
         .event_handler(discord::DiscordHandler::new(
             discord_config.clone(),
             irc_config.clone(),
             irc_sender,
         ))
+        .intents(intents)
         .await?;
 
     let irc_fut = irc_handler_future(
