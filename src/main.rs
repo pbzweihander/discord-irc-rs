@@ -17,7 +17,7 @@ use libirc::client::Client;
 
 async fn irc_handler_future(
     mut irc_client: Client,
-    discord_http: Arc<serenity::http::client::Http>,
+    discord_http: Arc<serenity::CacheAndHttp>,
     irc_config: config::IrcConfig,
     discord_config: config::DiscordConfig,
 ) -> Result<()> {
@@ -71,7 +71,7 @@ async fn main() -> Result<()> {
 
     let irc_fut = irc_handler_future(
         irc_client,
-        discord_client.cache_and_http.http.clone(),
+        discord_client.cache_and_http.clone(),
         irc_config,
         discord_config,
     );
