@@ -6,7 +6,7 @@ use serenity::model::channel::Message;
 use serenity::prelude::*;
 
 use crate::config::*;
-use crate::utils::normalize_irc_nickname;
+use crate::utils::{insert_zero_width_spaces_into_nickname, normalize_irc_nickname};
 
 pub struct DiscordHandler {
     config: DiscordConfig,
@@ -33,6 +33,11 @@ impl EventHandler for DiscordHandler {
             let content = msg.content_safe(&cache).await;
             let id = msg.author.id.0;
             let name = msg.author_nick(&http).await.unwrap_or(msg.author.name);
+            let display_name = if self.irc_config.prevent_noti_by_nicknames {
+                Cow::Owned(insert_zero_width_spaces_into_nickname(&name))
+            } else {
+                Cow::Borrowed(&name)
+            };
 
             let lines = content
                 .split('\n')
@@ -62,7 +67,10 @@ impl EventHandler for DiscordHandler {
                             ],
                         )
                     } else {
-                        IrcCommand::PRIVMSG(channel.to_string(), format!("<{}> {}", name, line))
+                        IrcCommand::PRIVMSG(
+                            channel.to_string(),
+                            format!("<{}> {}", display_name, line),
+                        )
                     };
                     if let Err(e) = self.irc_sender.send(command) {
                         error!("Discord to IRC send error: {}", e)

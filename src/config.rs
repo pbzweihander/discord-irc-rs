@@ -20,6 +20,10 @@ pub struct IrcConfig {
     pub ozinger: Option<IrcOzingerConfig>,
     #[serde(default)]
     pub bridge_member_changes: bool,
+    /// By setting this option as `true`, you can keep the bot from notifying people with nicknames
+    /// by inserting zero width spaces (U+200B) into nicknames.
+    #[serde(default)]
+    pub prevent_noti_by_nicknames: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]
