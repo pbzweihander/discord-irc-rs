@@ -175,10 +175,8 @@ impl Converter {
 
     fn update_color(&mut self, new_fg: Option<u8>, new_bg: Option<u8>) {
         let spoilers_before = self.is_spoilers_state();
-        if new_fg.is_some() && new_bg.is_none() {
-            self.fg = new_fg;
-        } else {
-            self.fg = new_fg;
+        self.fg = new_fg;
+        if new_fg.is_none() || new_bg.is_some() {
             self.bg = new_bg;
         }
         if spoilers_before != self.is_spoilers_state() {
