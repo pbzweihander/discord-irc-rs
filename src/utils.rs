@@ -17,7 +17,7 @@ pub fn insert_zero_width_spaces_into_nickname(nick: &str) -> String {
             let a = graphemes[1];
 
             s.push_str(&nick[..a]);
-            s.push_str("\u{200B}");
+            s.push('\u{200B}');
             s.push_str(&nick[a..]);
             s
         }
@@ -28,9 +28,9 @@ pub fn insert_zero_width_spaces_into_nickname(nick: &str) -> String {
             let b = graphemes[count * 2 / 3];
 
             s.push_str(&nick[..a]);
-            s.push_str("\u{200B}");
+            s.push('\u{200B}');
             s.push_str(&nick[a..b]);
-            s.push_str("\u{200B}");
+            s.push('\u{200B}');
             s.push_str(&nick[b..]);
             s
         }

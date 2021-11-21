@@ -24,6 +24,10 @@ pub struct IrcConfig {
     /// by inserting zero width spaces (U+200B) into nicknames.
     #[serde(default)]
     pub prevent_noti_by_nicknames: bool,
+    /// By setting this option as `true`, this bot will automatically detect the avatar of IRC
+    /// users by searching for the user with the same nickname on the Discord channel.
+    #[serde(default)]
+    pub auto_detect_avatar: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]

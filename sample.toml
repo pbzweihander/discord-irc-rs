@@ -30,6 +30,10 @@ ignores = []
 ## By setting this option as `true`, you can keep the bot from notifying people with nicknames
 ## by inserting zero width spaces (U+200B) into nicknames.
 # prevent_noti_by_nicknames = false
+## Set true to automatically detect the avater of IRC users.
+##
+## NOTE: This option requires "Server Members Intent", and "Presence Intent".
+# auto_detect_avatar = false
 
 ## Special config for ozinger.org IRC network.
 # [irc.ozinger]
@@ -40,6 +44,9 @@ ignores = []
 ## "Application ID" of Discord application. Please refer to the following links
 ## on how to create an application (a.k.a. bot account) and retrieve a token
 ## from it:
+##
+## NOTE: This bot always requires "Message Content Intent".
+##
 ## - https://discord.com/developers/docs/topics/oauth2#bots
 ## - https://discord.com/developers/applications
 token = ""

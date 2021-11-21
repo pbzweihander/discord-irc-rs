@@ -1,6 +1,7 @@
 use anyhow::Result;
 use libirc::client::prelude::{Command, Message, Prefix, Response};
 use libirc::client::Sender;
+use serenity::{builder::ExecuteWebhook, utils::hashmap_to_json_map};
 
 use crate::config::{DiscordConfig, IrcConfig};
 use crate::format::irc_msg_to_discord;
@@ -8,16 +9,16 @@ use crate::format::irc_msg_to_discord;
 pub async fn handle_irc(
     msg: Message,
     irc_sender: Sender,
-    discord_http: &serenity::http::client::Http,
+    discord: &serenity::CacheAndHttp,
     config: IrcConfig,
-    discord: DiscordConfig,
+    discord_config: DiscordConfig,
 ) -> Result<()> {
     let DiscordConfig {
         channel_id,
         webhook_id,
         webhook_token,
         ..
-    } = discord;
+    } = discord_config;
     match msg.command {
         Command::ERROR(args) => error!("IRC> Error {}", args),
         Command::Response(Response::RPL_WELCOME, _) => {
@@ -34,13 +35,21 @@ pub async fn handle_irc(
                 } else {
                     info!("IRC> <{}> {}", nickname, content);
 
+                    let mut avatar = None;
+                    if config.auto_detect_avatar {
+                        avatar = auto_detect_avatar(&discord.cache, channel_id, &nickname).await;
+                    }
+
                     let content = irc_msg_to_discord(&content);
-                    discord_http
-                        .get_webhook_with_token(webhook_id, &webhook_token)
-                        .await?
-                        .execute(discord_http, true, |builder| {
-                            builder.username(nickname).content(content)
-                        })
+                    let mut builder = ExecuteWebhook::default();
+                    builder.username(nickname).content(content);
+                    if let Some(avatar) = avatar {
+                        builder.avatar_url(avatar);
+                    }
+                    let json = hashmap_to_json_map(builder.0);
+                    discord
+                        .http
+                        .execute_webhook(webhook_id, &webhook_token, true, &json)
                         .await?;
                 }
             }
@@ -53,7 +62,7 @@ pub async fn handle_irc(
                 {
                     serenity::model::id::ChannelId::from(channel_id)
                         .say(
-                            discord_http,
+                            &discord.http,
                             format_args!("**{}** has joined the channel.", nickname),
                         )
                         .await?;
@@ -73,7 +82,7 @@ pub async fn handle_irc(
                         message.push_str("`)");
                     }
                     serenity::model::id::ChannelId::from(channel_id)
-                        .say(discord_http, message)
+                        .say(&discord.http, message)
                         .await?;
                 }
             }
@@ -92,7 +101,7 @@ pub async fn handle_irc(
                         message.push_str("`)");
                     }
                     serenity::model::id::ChannelId::from(channel_id)
-                        .say(discord_http, message)
+                        .say(&discord.http, message)
                         .await?;
                 }
             }
@@ -103,4 +112,28 @@ pub async fn handle_irc(
     }
 
     Ok(())
+}
+
+async fn auto_detect_avatar(
+    cache: &serenity::cache::Cache,
+    channel_id: u64,
+    nickname: &str,
+) -> Option<String> {
+    match cache.guild_channel(channel_id).await {
+        None => {}
+        Some(channel) => match channel.members(&cache).await {
+            Err(_) => {}
+            Ok(members) => {
+                for member in members {
+                    if *member.display_name() == nickname {
+                        return Some(member.face());
+                    }
+                }
+                return None;
+            }
+        },
+    };
+
+    warn!("Cache missed while it should never be missed");
+    None
 }
