@@ -41,7 +41,7 @@ impl EventHandler for DiscordHandler {
 
             let lines = content
                 .split('\n')
-                .map(|s| Cow::Borrowed(s))
+                .map(Cow::Borrowed)
                 .chain(msg.attachments.into_iter().map(|at| at.url).map(Into::into));
 
             if self.config.ignores.contains(&name) {
