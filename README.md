@@ -1,8 +1,5 @@
 # discord-irc-rs
 
-[![CircleCI Status Badge]][CircleCI]
-[![Docker Pulls Badge]][Docker Hub]
-
 A Discord to IRC and vice-versa bridge bot written in Rust.
 
 ## Usage
@@ -26,11 +23,6 @@ $ docker run --rm -it -e RUST_LOG=info -v $PWD/config.toml:/config.toml pbzweiha
 ------
 
 _discord-irs-rs_ is distributed under the terms of both [MIT license] and [Apache License 2.0]. See [COPYRIGHT] for details.
-
-[CircleCI Status Badge]: https://circleci.com/gh/pbzweihander/discord-irc-rs.svg?style=svg
-[CircleCI]: https://circleci.com/gh/pbzweihander/discord-irc-rs
-[Docker Pulls Badge]: https://badgen.net/docker/pulls/pbzweihander/discord-irc-rs
-[Docker Hub]: https://hub.docker.com/r/pbzweihander/discord-irc-rs
 
 [MIT license]: LICENSE-MIT
 [Apache License 2.0]: LICENSE-APACHE

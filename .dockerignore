@@ -1,5 +1,0 @@
-/target
-**/*.rs.bk
-!/target/release/discord-irc
-
-config.toml
