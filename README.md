@@ -4,8 +4,6 @@ A Discord to IRC and vice-versa bridge bot written in Rust.
 
 ## Usage
 
-Requires 1.39+ version of rustc.
-
 ```bash
 $ cp sample.toml config.toml
 # Edit config.toml ...
@@ -17,7 +15,7 @@ OR
 ```bash
 $ cp sample.toml config.toml
 # Edit config.toml ...
-$ docker run --rm -it -e RUST_LOG=info -v $PWD/config.toml:/config.toml pbzweihander/discord-irc-rs
+$ docker run --rm -it -e RUST_LOG=info -v $PWD/config.toml:/a/config.toml ghcr.io/pbzweihander/discord-irc-rs
 ```
 
 ------
