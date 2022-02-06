@@ -1,3 +1,6 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
+
 #[derive(Debug)]
 enum Token<'a> {
     Text(&'a str),
@@ -130,6 +133,11 @@ impl Formatting {
     }
 }
 
+static SIMPLE_HTTP_REGEX: Lazy<Regex> = Lazy::new(|| {
+    // http://www.regexguru.com/2008/11/detecting-urls-in-a-block-of-text/
+    Regex::new(r"(?i:https?://[-a-z0-9+&@#/%?=~_|!:,.;]*[a-z0-9+&@#/%=~_|])").unwrap()
+});
+
 #[derive(Default)]
 pub struct Converter {
     stack: Vec<Formatting>,
@@ -141,14 +149,34 @@ pub struct Converter {
 impl Converter {
     pub fn convert(message: impl AsRef<str>) -> String {
         let mut converter = Self::default();
-        let mut message = message.as_ref();
-        while let Some((token, next)) = Token::read_one(message) {
-            converter.process_token(token);
-            message = next;
+        let message = message.as_ref();
+
+        let matches_range = SIMPLE_HTTP_REGEX.find_iter(message).map(|m| m.range());
+        let mut last_match_idx = 0usize;
+        for url_range in matches_range {
+            converter.push(&message[last_match_idx..url_range.start]);
+            last_match_idx = url_range.end;
+
+            // check this is really a URL
+            let url_candidate = &message[url_range];
+            if url::Url::parse(url_candidate).is_ok() {
+                // push URL as-is
+                converter.process_token(Token::Text(url_candidate));
+            } else {
+                converter.push(url_candidate);
+            }
         }
+        converter.push(&message[last_match_idx..]);
         converter.process_token(Token::Reset);
 
         converter.message
+    }
+
+    fn push(&mut self, mut message: &str) {
+        while let Some((token, next)) = Token::read_one(message) {
+            self.process_token(token);
+            message = next;
+        }
     }
 
     fn process_token(&mut self, token: Token) {
@@ -208,5 +236,26 @@ impl Converter {
             message.push_str(format.as_str());
             stack.push(format);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Converter;
+
+    #[test]
+    fn url_with_underline() {
+        assert_eq!(
+            Converter::convert("see this https://example.com/some_path_with_underline?and_this="),
+            "see this https://example.com/some_path_with_underline?and_this=",
+        );
+        assert_eq!(
+            Converter::convert("example.com/this_is_not_url wow really?"),
+            "example.com/this\\_is\\_not\\_url wow really?",
+        );
+        assert_eq!(
+            Converter::convert("http://example.com/multiple_urls https://example.com/should_work example.com/but_not_this"),
+            "http://example.com/multiple_urls https://example.com/should_work example.com/but\\_not\\_this",
+        );
     }
 }
