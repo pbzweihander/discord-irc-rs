@@ -57,7 +57,7 @@ pub async fn handle_irc(
         Command::JOIN(..) => {
             if let Some(Prefix::Nickname(nickname, ..)) = msg.prefix {
                 if config.bridge_member_changes
-                    && config.connection.nickname.as_ref() == Some(&nickname)
+                    && config.connection.nickname.as_ref() != Some(&nickname)
                     && !config.ignores.contains(&nickname)
                 {
                     serenity::model::id::ChannelId::from(channel_id)
