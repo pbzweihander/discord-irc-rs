@@ -1,9 +1,9 @@
 use unicode_segmentation::UnicodeSegmentation;
 
 pub fn normalize_irc_nickname(s: &str) -> String {
-    s.replace("!", "ǃ") // U+0021 -> U+01C3
-        .replace("@", "＠") // U+0040 -> U+FE6B
-        .replace(" ", "_")
+    s.replace('!', "ǃ") // U+0021 -> U+01C3
+        .replace('@', "＠") // U+0040 -> U+FE6B
+        .replace(' ', "_")
 }
 
 pub fn insert_zero_width_spaces_into_nickname(nick: &str) -> String {
