@@ -44,7 +44,7 @@ impl<'a> Token<'a> {
                     0x03 => {
                         let msg_bytes = message.as_bytes();
                         let (fg, off, cont) =
-                            match (msg_bytes.get(0), msg_bytes.get(1), msg_bytes.get(2)) {
+                            match (msg_bytes.first(), msg_bytes.get(1), msg_bytes.get(2)) {
                                 (Some(a @ b'0'..=b'9'), Some(b @ b'0'..=b'9'), Some(b',')) => {
                                     let a = a - b'0';
                                     let b = b - b'0';
