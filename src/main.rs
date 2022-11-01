@@ -15,12 +15,14 @@ use anyhow::{bail, Result};
 use futures::prelude::*;
 use libirc::client::Client;
 use serenity::client::bridge::gateway::GatewayIntents;
+use stopper::Stopper;
 
 async fn irc_handler_future(
     mut irc_client: Client,
     discord_http: Arc<serenity::CacheAndHttp>,
     irc_config: config::IrcConfig,
     discord_config: config::DiscordConfig,
+    stopper: Option<Stopper>,
 ) -> Result<()> {
     let irc_sender = irc_client.sender();
     irc_client
@@ -38,6 +40,9 @@ async fn irc_handler_future(
         .map(|res| {
             if let Err(err) = res {
                 error!("IrcStream error: {}", err);
+                if let Some(stopper) = &stopper {
+                    stopper.stop();
+                }
             }
         })
         .collect::<()>()
@@ -54,9 +59,16 @@ async fn main() -> Result<()> {
         bail!("USAGE: {} <CONFIG_PATH>", args[0]);
     }
     let config::Config {
+        exit_on_send_error,
         irc: irc_config,
         discord: discord_config,
     } = config::Config::from_path(&args[1])?;
+
+    let stopper = if exit_on_send_error {
+        Some(Stopper::new())
+    } else {
+        None
+    };
 
     let irc_client = Client::from_config(irc_config.connection.clone()).await?;
     let irc_sender = irc_client.sender();
@@ -72,6 +84,7 @@ async fn main() -> Result<()> {
             discord_config.clone(),
             irc_config.clone(),
             irc_sender,
+            stopper.clone(),
         ))
         .intents(intents)
         .await?;
@@ -81,11 +94,21 @@ async fn main() -> Result<()> {
         discord_client.cache_and_http.clone(),
         irc_config,
         discord_config,
+        stopper.clone(),
     );
 
     let discord_fut = discord_client.start().map_err(anyhow::Error::from);
 
-    futures::future::try_join(irc_fut, discord_fut).await?;
+    let handler_futs = futures::future::try_join(irc_fut, discord_fut);
+
+    let res = if let Some(stopper) = &stopper {
+        stopper.stop_future(handler_futs).await
+    } else {
+        Some(handler_futs.await)
+    };
+    if let Some(res) = res {
+        res?;
+    }
 
     exit(1)
 }

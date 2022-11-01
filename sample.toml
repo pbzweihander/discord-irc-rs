@@ -1,3 +1,6 @@
+# If true, the application will exit when send error occured.
+exit_on_send_error = false
+
 [irc]
 ## Hostname of target IRC server. (ex: "irc.libera.chat")
 server = ""

@@ -16,6 +16,7 @@ tracing = "0.1.25"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 unicode-segmentation = "1.8.0"
 url = "2.2.2"
+stopper = "0.2.0"
 
 [dependencies.libirc]
 package = "irc"

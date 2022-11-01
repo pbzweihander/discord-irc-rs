@@ -42,6 +42,8 @@ pub struct DiscordConfig {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
+    #[serde(default)]
+    pub exit_on_send_error: bool,
     pub irc: IrcConfig,
     pub discord: DiscordConfig,
 }

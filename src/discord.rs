@@ -4,6 +4,7 @@ use libirc::client::prelude::Command as IrcCommand;
 use libirc::client::Sender;
 use serenity::model::channel::Message;
 use serenity::prelude::*;
+use stopper::Stopper;
 
 use crate::config::*;
 use crate::utils::{insert_zero_width_spaces_into_nickname, normalize_irc_nickname};
@@ -12,14 +13,21 @@ pub struct DiscordHandler {
     config: DiscordConfig,
     irc_config: IrcConfig,
     irc_sender: Sender,
+    stopper: Option<Stopper>,
 }
 
 impl DiscordHandler {
-    pub fn new(config: DiscordConfig, irc_config: IrcConfig, irc_sender: Sender) -> Self {
+    pub fn new(
+        config: DiscordConfig,
+        irc_config: IrcConfig,
+        irc_sender: Sender,
+        stopper: Option<Stopper>,
+    ) -> Self {
         DiscordHandler {
             config,
             irc_config,
             irc_sender,
+            stopper,
         }
     }
 }
@@ -73,7 +81,10 @@ impl EventHandler for DiscordHandler {
                         )
                     };
                     if let Err(e) = self.irc_sender.send(command) {
-                        error!("Discord to IRC send error: {}", e)
+                        error!("Discord to IRC send error: {}", e);
+                        if let Some(stopper) = &self.stopper {
+                            stopper.stop();
+                        }
                     }
                 }
             }
