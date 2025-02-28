@@ -17,13 +17,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 unicode-segmentation = "1.8.0"
 url = "2.2.2"
 stopper = "0.2.0"
-
-[dependencies.libirc]
-package = "irc"
-# FIXME: Use original crate when https://github.com/aatxe/irc/pull/236 merged
-git = "https://github.com/simnalamburt/irc"
-default-features = false
-features = ["ctcp", "tls-rust", "toml_config"]
+libirc = { package = "irc", version = "1.0.0", default-features = false, features = ["ctcp", "tls-rust", "toml_config"] }
 
 [dependencies.serenity]
 version = "0.10.4"
