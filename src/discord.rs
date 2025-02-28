@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
-use libirc::client::prelude::Command as IrcCommand;
 use libirc::client::Sender;
+use libirc::client::prelude::Command as IrcCommand;
 use serenity::model::channel::Message;
 use serenity::prelude::*;
 use stopper::Stopper;

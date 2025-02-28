@@ -1,6 +1,6 @@
 use anyhow::Result;
-use libirc::client::prelude::{Command, Message, Prefix, Response};
 use libirc::client::Sender;
+use libirc::client::prelude::{Command, Message, Prefix, Response};
 use serenity::{builder::ExecuteWebhook, utils::hashmap_to_json_map};
 
 use crate::config::{DiscordConfig, IrcConfig};

@@ -11,7 +11,7 @@ use std::env::args;
 use std::process::exit;
 use std::sync::Arc;
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use futures::prelude::*;
 use libirc::client::Client;
 use serenity::client::bridge::gateway::GatewayIntents;

@@ -254,7 +254,9 @@ mod tests {
             "example.com/this\\_is\\_not\\_url wow really?",
         );
         assert_eq!(
-            Converter::convert("http://example.com/multiple_urls https://example.com/should_work example.com/but_not_this"),
+            Converter::convert(
+                "http://example.com/multiple_urls https://example.com/should_work example.com/but_not_this"
+            ),
             "http://example.com/multiple_urls https://example.com/should_work example.com/but\\_not\\_this",
         );
     }
