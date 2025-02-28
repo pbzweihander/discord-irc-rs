@@ -5,17 +5,17 @@ A Discord to IRC and vice-versa bridge bot written in Rust.
 ## Usage
 
 ```bash
-$ cp sample.toml config.toml
+cp sample.toml config.toml
 # Edit config.toml ...
-$ RUST_LOG=info cargo run -- config.toml
+RUST_LOG=info cargo run -- config.toml
 ```
 
 OR
 
 ```bash
-$ cp sample.toml config.toml
+cp sample.toml config.toml
 # Edit config.toml ...
-$ docker run --rm -it -e RUST_LOG=info -v $PWD/config.toml:/a/config.toml ghcr.io/pbzweihander/discord-irc-rs
+docker run --rm -it -e RUST_LOG=info -v $PWD/config.toml:/a/config.toml ghcr.io/pbzweihander/discord-irc-rs
 ```
 
 ------
