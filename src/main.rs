@@ -74,7 +74,8 @@ async fn main() -> Result<()> {
     let irc_sender = irc_client.sender();
     irc_client.identify()?;
 
-    let mut intents = GatewayIntents::GUILDS | GatewayIntents::GUILD_MESSAGES;
+    let mut intents =
+        GatewayIntents::MESSAGE_CONTENT | GatewayIntents::GUILDS | GatewayIntents::GUILD_MESSAGES;
     if irc_config.auto_detect_avatar {
         intents |= GatewayIntents::GUILD_MEMBERS | GatewayIntents::GUILD_PRESENCES;
     }
