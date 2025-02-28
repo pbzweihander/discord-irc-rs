@@ -79,7 +79,7 @@ async fn main() -> Result<()> {
         intents |= GatewayIntents::GUILD_MEMBERS | GatewayIntents::GUILD_PRESENCES;
     }
 
-    let mut discord_client = serenity::Client::builder(&discord_config.token.clone())
+    let mut discord_client = serenity::Client::builder(discord_config.token.clone())
         .event_handler(discord::DiscordHandler::new(
             discord_config.clone(),
             irc_config.clone(),
