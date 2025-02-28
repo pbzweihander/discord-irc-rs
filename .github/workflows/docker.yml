@@ -1,19 +1,23 @@
-on: [push, pull_request]
+on:
+  push:
+    # Execute only when a tag in the format `vX.Y.Z` is pushed
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       packages: write
       contents: read
     steps:
-      - uses: docker/setup-qemu-action@v1
-      - uses: docker/setup-buildx-action@v1
-      - uses: actions/checkout@v2
-      - run: docker buildx build --platform linux/amd64,linux/arm64/v8 .
-      - if: github.ref == 'refs/heads/main'
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker buildx build --platform linux/amd64,linux/arm64/v8 . -t ghcr.io/pbzweihander/discord-irc-rs:${{ github.sha }} --push
-          docker buildx build --platform linux/amd64,linux/arm64/v8 . -t ghcr.io/pbzweihander/discord-irc-rs:latest --push
-
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v4
+      - run: |
+          TAG=${GITHUB_REF#refs/tags/v}
+          docker login ghcr.io -u '${{ github.actor }}' --password-stdin <<< '${{ secrets.GITHUB_TOKEN }}'
+          docker buildx build --push \
+            --platform linux/amd64,linux/arm64/v8 \
+            --tag "ghcr.io/pbzweihander/discord-irc-rs:${TAG}" \
+            --tag 'ghcr.io/pbzweihander/discord-irc-rs:latest' .
