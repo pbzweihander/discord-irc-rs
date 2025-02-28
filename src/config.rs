@@ -53,6 +53,8 @@ impl Config {
         libconfig::Config::builder()
             .add_source(libconfig::File::from(path.into()))
             .add_source(libconfig::Environment::with_prefix("APP"))
-            .build()?.try_deserialize().map_err(Into::into)
+            .build()?
+            .try_deserialize()
+            .map_err(Into::into)
     }
 }

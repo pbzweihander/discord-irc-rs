@@ -14,7 +14,7 @@ use std::sync::Arc;
 use anyhow::{Result, bail};
 use futures::prelude::*;
 use libirc::client::Client;
-use serenity::client::bridge::gateway::GatewayIntents;
+use serenity::prelude::GatewayIntents;
 use stopper::Stopper;
 
 async fn irc_handler_future(
@@ -79,7 +79,7 @@ async fn main() -> Result<()> {
         intents |= GatewayIntents::GUILD_MEMBERS | GatewayIntents::GUILD_PRESENCES;
     }
 
-    let mut discord_client = serenity::Client::builder(discord_config.token.clone())
+    let mut discord_client = serenity::Client::builder(discord_config.token.clone(), intents)
         .event_handler(discord::DiscordHandler::new(
             discord_config.clone(),
             irc_config.clone(),

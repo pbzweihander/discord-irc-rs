@@ -1,7 +1,7 @@
 use anyhow::Result;
 use libirc::client::Sender;
 use libirc::client::prelude::{Command, Message, Prefix, Response};
-use serenity::{builder::ExecuteWebhook, utils::hashmap_to_json_map};
+use serenity::{builder::ExecuteWebhook, json::hashmap_to_json_map};
 
 use crate::config::{DiscordConfig, IrcConfig};
 use crate::format::irc_msg_to_discord;
@@ -119,7 +119,7 @@ async fn auto_detect_avatar(
     channel_id: u64,
     nickname: &str,
 ) -> Option<String> {
-    match cache.guild_channel(channel_id).await {
+    match cache.guild_channel(channel_id) {
         None => {}
         Some(channel) => match channel.members(&cache).await {
             Err(_) => {}

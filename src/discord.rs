@@ -38,7 +38,7 @@ impl EventHandler for DiscordHandler {
         if !msg.author.bot && msg.channel_id == self.config.channel_id {
             let Context { http, cache, .. } = ctx;
 
-            let content = msg.content_safe(&cache).await;
+            let content = msg.content_safe(&cache);
             let id = msg.author.id.0;
             let name = msg.author_nick(&http).await.unwrap_or(msg.author.name);
             let display_name = if self.irc_config.prevent_noti_by_nicknames {
