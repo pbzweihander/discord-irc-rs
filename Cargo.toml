@@ -1,6 +1,6 @@
 [package]
 name = "discord-irc"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["pbzweihander <pbzweihander@gmail.com>"]
 edition = "2024"
 
