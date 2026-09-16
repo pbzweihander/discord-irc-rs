@@ -39,7 +39,7 @@ impl EventHandler for DiscordHandler {
             let Context { http, cache, .. } = ctx;
 
             let content = msg.content_safe(&cache);
-            let id = msg.author.id.0;
+            let id = msg.author.id.get();
             let name = msg.author_nick(&http).await.unwrap_or(msg.author.name);
             let display_name = if self.irc_config.prevent_noti_by_nicknames {
                 Cow::Owned(insert_zero_width_spaces_into_nickname(&name))

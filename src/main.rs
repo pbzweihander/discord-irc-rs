@@ -19,7 +19,8 @@ use stopper::Stopper;
 
 async fn irc_handler_future(
     mut irc_client: Client,
-    discord_http: Arc<serenity::CacheAndHttp>,
+    discord_cache: Arc<serenity::cache::Cache>,
+    discord_http: Arc<serenity::http::Http>,
     irc_config: config::IrcConfig,
     discord_config: config::DiscordConfig,
     stopper: Option<Stopper>,
@@ -30,11 +31,20 @@ async fn irc_handler_future(
         .err_into()
         .and_then(|msg| {
             let irc_sender = irc_sender.clone();
+            let discord_cache = discord_cache.clone();
             let discord_http = discord_http.clone();
             let irc_config = irc_config.clone();
             let discord_config = discord_config.clone();
             async move {
-                irc::handle_irc(msg, irc_sender, &discord_http, irc_config, discord_config).await
+                irc::handle_irc(
+                    msg,
+                    irc_sender,
+                    &discord_cache,
+                    &discord_http,
+                    irc_config,
+                    discord_config,
+                )
+                .await
             }
         })
         .map(|res| {
@@ -92,7 +102,8 @@ async fn main() -> Result<()> {
 
     let irc_fut = irc_handler_future(
         irc_client,
-        discord_client.cache_and_http.clone(),
+        discord_client.cache.clone(),
+        discord_client.http.clone(),
         irc_config,
         discord_config,
         stopper.clone(),
