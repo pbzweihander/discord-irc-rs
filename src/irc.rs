@@ -55,55 +55,51 @@ pub async fn handle_irc(
             }
         }
         Command::JOIN(..) => {
-            if let Some(Prefix::Nickname(nickname, ..)) = msg.prefix {
-                if config.bridge_member_changes
-                    && config.connection.nickname.as_ref() != Some(&nickname)
-                    && !config.ignores.contains(&nickname)
-                {
-                    serenity::model::id::ChannelId::from(channel_id)
-                        .say(
-                            &discord.http,
-                            format_args!("**{}** has joined the channel.", nickname),
-                        )
-                        .await?;
-                }
+            if let Some(Prefix::Nickname(nickname, ..)) = msg.prefix
+                && config.bridge_member_changes
+                && config.connection.nickname.as_ref() != Some(&nickname)
+                && !config.ignores.contains(&nickname)
+            {
+                serenity::model::id::ChannelId::from(channel_id)
+                    .say(
+                        &discord.http,
+                        format_args!("**{}** has joined the channel.", nickname),
+                    )
+                    .await?;
             }
         }
         Command::PART(_, comment) | Command::QUIT(comment) => {
-            if let Some(Prefix::Nickname(nickname, ..)) = msg.prefix {
-                if config.bridge_member_changes
-                    && config.connection.nickname.as_ref() == Some(&nickname)
-                    && !config.ignores.contains(&nickname)
-                {
-                    let mut message = format!("**{}** has left the channel.", nickname);
-                    if let Some(comment) = comment {
-                        message.push_str(" (`");
-                        message.push_str(&comment);
-                        message.push_str("`)");
-                    }
-                    serenity::model::id::ChannelId::from(channel_id)
-                        .say(&discord.http, message)
-                        .await?;
+            if let Some(Prefix::Nickname(nickname, ..)) = msg.prefix
+                && config.bridge_member_changes
+                && config.connection.nickname.as_ref() == Some(&nickname)
+                && !config.ignores.contains(&nickname)
+            {
+                let mut message = format!("**{}** has left the channel.", nickname);
+                if let Some(comment) = comment {
+                    message.push_str(" (`");
+                    message.push_str(&comment);
+                    message.push_str("`)");
                 }
+                serenity::model::id::ChannelId::from(channel_id)
+                    .say(&discord.http, message)
+                    .await?;
             }
         }
         Command::KICK(_, nickname, comment) => {
-            if let Some(Prefix::Nickname(kicked_by, ..)) = msg.prefix {
-                if config.bridge_member_changes
-                    && config.connection.nickname.as_ref() == Some(&nickname)
-                    && !config.ignores.contains(&nickname)
-                {
-                    let mut message =
-                        format!("**{}** has been kicked by **{}**.", nickname, kicked_by);
-                    if let Some(comment) = comment {
-                        message.push_str(" (`");
-                        message.push_str(&comment);
-                        message.push_str("`)");
-                    }
-                    serenity::model::id::ChannelId::from(channel_id)
-                        .say(&discord.http, message)
-                        .await?;
+            if let Some(Prefix::Nickname(kicked_by, ..)) = msg.prefix
+                && config.bridge_member_changes
+                && config.connection.nickname.as_ref() == Some(&nickname)
+                && !config.ignores.contains(&nickname)
+            {
+                let mut message = format!("**{}** has been kicked by **{}**.", nickname, kicked_by);
+                if let Some(comment) = comment {
+                    message.push_str(" (`");
+                    message.push_str(&comment);
+                    message.push_str("`)");
                 }
+                serenity::model::id::ChannelId::from(channel_id)
+                    .say(&discord.http, message)
+                    .await?;
             }
         }
         _ => {
