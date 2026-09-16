@@ -9,7 +9,7 @@ anyhow = "1.0.104"
 futures = "0.3.34"
 config = "0.15.25"
 regex = { version = "1.13.1", default-features = false, features = ["std", "perf", "unicode-case"] }
-serde = "1.0.229"
+serde = { version = "1.0.229", features = ["derive"] }
 tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
