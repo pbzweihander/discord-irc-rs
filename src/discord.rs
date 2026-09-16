@@ -5,6 +5,7 @@ use irc::client::prelude::Command as IrcCommand;
 use serenity::model::channel::Message;
 use serenity::prelude::*;
 use stopper::Stopper;
+use tracing::{debug, error, info};
 
 use crate::app_config::*;
 use crate::utils::{insert_zero_width_spaces_into_nickname, normalize_irc_nickname};

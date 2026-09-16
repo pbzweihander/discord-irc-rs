@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate tracing;
-
 mod app_config;
 mod discord;
 mod format;
@@ -16,6 +13,7 @@ use futures::prelude::*;
 use irc::client::Client;
 use serenity::prelude::GatewayIntents;
 use stopper::Stopper;
+use tracing::error;
 
 async fn irc_handler_future(
     mut irc_client: Client,

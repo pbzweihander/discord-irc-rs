@@ -2,6 +2,7 @@ use anyhow::Result;
 use irc::client::Sender;
 use irc::client::prelude::{Command, Message, Prefix, Response};
 use serenity::builder::{Builder, ExecuteWebhook};
+use tracing::{debug, error, info, warn};
 
 use crate::app_config::{DiscordConfig, IrcConfig};
 use crate::format::irc_msg_to_discord;
