@@ -20,7 +20,7 @@ docker run --rm -it -e RUST_LOG=info -v $PWD/config.toml:/a/config.toml ghcr.io/
 
 ------
 
-_discord-irs-rs_ is distributed under the terms of both [MIT license] and [Apache License 2.0]. See [COPYRIGHT] for details.
+_discord-irc-rs_ is distributed under the terms of both [MIT license] and [Apache License 2.0]. See [COPYRIGHT] for details.
 
 [MIT license]: LICENSE-MIT
 [Apache License 2.0]: LICENSE-APACHE
