@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
-use libirc::client::data::Config as IrcConnectionConfig;
+use irc::client::data::Config as IrcConnectionConfig;
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]

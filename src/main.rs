@@ -4,7 +4,7 @@ extern crate tracing;
 mod config;
 mod discord;
 mod format;
-mod irc;
+mod irc_handler;
 mod utils;
 
 use std::env::args;
@@ -13,7 +13,7 @@ use std::sync::Arc;
 
 use anyhow::{Result, bail};
 use futures::prelude::*;
-use libirc::client::Client;
+use irc::client::Client;
 use serenity::prelude::GatewayIntents;
 use stopper::Stopper;
 
@@ -36,7 +36,7 @@ async fn irc_handler_future(
             let irc_config = irc_config.clone();
             let discord_config = discord_config.clone();
             async move {
-                irc::handle_irc(
+                irc_handler::handle_irc(
                     msg,
                     irc_sender,
                     &discord_cache,

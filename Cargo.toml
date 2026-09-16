@@ -16,7 +16,7 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 unicode-segmentation = "1.13.3"
 url = "2.5.8"
 stopper = "0.2.8"
-libirc = { package = "irc", version = "1.1.0", default-features = false, features = ["ctcp", "tls-rust", "toml_config"] }
+irc = { version = "1.1.0", default-features = false, features = ["ctcp", "tls-rust", "toml_config"] }
 
 [dependencies.serenity]
 version = "0.12.5"
