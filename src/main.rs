@@ -58,9 +58,17 @@ async fn irc_handler_future(
     Ok(())
 }
 
+fn initialize_tls() -> Result<()> {
+    // IRC and Discord dependencies enable both Rustls crypto providers.
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .map_err(|_| anyhow::anyhow!("Rustls crypto provider was already initialized"))
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
+    initialize_tls()?;
 
     let args: Vec<_> = args().take(2).collect();
     if args.len() != 2 {
@@ -120,4 +128,15 @@ async fn main() -> Result<()> {
     }
 
     exit(1)
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn tls_client_config_initializes() {
+        super::initialize_tls().unwrap();
+        let _config = rustls::ClientConfig::builder()
+            .with_root_certificates(rustls::RootCertStore::empty())
+            .with_no_client_auth();
+    }
 }

@@ -352,6 +352,7 @@ dependencies = [
  "futures",
  "irc",
  "regex",
+ "rustls 0.23.45",
  "serde",
  "serenity",
  "stopper",
