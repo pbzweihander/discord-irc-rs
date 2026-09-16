@@ -1,4 +1,5 @@
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
+
 use regex::Regex;
 
 #[derive(Debug)]
@@ -133,7 +134,7 @@ impl Formatting {
     }
 }
 
-static SIMPLE_HTTP_REGEX: Lazy<Regex> = Lazy::new(|| {
+static SIMPLE_HTTP_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     // http://www.regexguru.com/2008/11/detecting-urls-in-a-block-of-text/
     Regex::new(r"(?i:https?://[-a-z0-9+&@#/%?=~_|!:,.;]*[a-z0-9+&@#/%=~_|])").unwrap()
 });
