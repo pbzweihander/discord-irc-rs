@@ -2,7 +2,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 pub fn normalize_irc_nickname(s: &str) -> String {
     s.replace('!', "ǃ") // U+0021 -> U+01C3
-        .replace('@', "＠") // U+0040 -> U+FE6B
+        .replace('@', "＠") // U+0040 -> U+FF20
         .replace(' ', "_")
 }
 
@@ -38,7 +38,7 @@ pub fn insert_zero_width_spaces_into_nickname(nick: &str) -> String {
 }
 
 #[test]
-pub fn test_insert_boms_into_nickname() {
+pub fn test_insert_zero_width_spaces_into_nickname() {
     let f = insert_zero_width_spaces_into_nickname;
 
     assert_eq!(f("기이다란닉네임"), "기이\u{200B}다란\u{200B}닉네임");
