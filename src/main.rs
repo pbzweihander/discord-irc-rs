@@ -95,7 +95,6 @@ async fn main() -> Result<()> {
             irc_sender,
             stopper.clone(),
         ))
-        .intents(intents)
         .await?;
 
     let irc_fut = irc_handler_future(
