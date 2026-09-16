@@ -3,7 +3,7 @@ use irc::client::Sender;
 use irc::client::prelude::{Command, Message, Prefix, Response};
 use serenity::builder::{Builder, ExecuteWebhook};
 
-use crate::config::{DiscordConfig, IrcConfig};
+use crate::app_config::{DiscordConfig, IrcConfig};
 use crate::format::irc_msg_to_discord;
 
 pub async fn handle_irc(

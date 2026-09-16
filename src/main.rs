@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate tracing;
 
-mod config;
+mod app_config;
 mod discord;
 mod format;
 mod irc_handler;
@@ -21,8 +21,8 @@ async fn irc_handler_future(
     mut irc_client: Client,
     discord_cache: Arc<serenity::cache::Cache>,
     discord_http: Arc<serenity::http::Http>,
-    irc_config: config::IrcConfig,
-    discord_config: config::DiscordConfig,
+    irc_config: app_config::IrcConfig,
+    discord_config: app_config::DiscordConfig,
     stopper: Option<Stopper>,
 ) -> Result<()> {
     let irc_sender = irc_client.sender();
@@ -68,11 +68,11 @@ async fn main() -> Result<()> {
     if args.len() != 2 {
         bail!("USAGE: {} <CONFIG_PATH>", args[0]);
     }
-    let config::Config {
+    let app_config::Config {
         exit_on_send_error,
         irc: irc_config,
         discord: discord_config,
-    } = config::Config::from_path(&args[1])?;
+    } = app_config::Config::from_path(&args[1])?;
 
     let stopper = if exit_on_send_error {
         Some(Stopper::new())

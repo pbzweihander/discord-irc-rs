@@ -6,7 +6,7 @@ use serenity::model::channel::Message;
 use serenity::prelude::*;
 use stopper::Stopper;
 
-use crate::config::*;
+use crate::app_config::*;
 use crate::utils::{insert_zero_width_spaces_into_nickname, normalize_irc_nickname};
 
 pub struct DiscordHandler {

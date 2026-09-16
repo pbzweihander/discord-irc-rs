@@ -50,9 +50,9 @@ pub struct Config {
 
 impl Config {
     pub fn from_path(path: impl Into<PathBuf>) -> Result<Self> {
-        libconfig::Config::builder()
-            .add_source(libconfig::File::from(path.into()))
-            .add_source(libconfig::Environment::with_prefix("APP"))
+        config::Config::builder()
+            .add_source(config::File::from(path.into()))
+            .add_source(config::Environment::with_prefix("APP"))
             .build()?
             .try_deserialize()
             .map_err(Into::into)
